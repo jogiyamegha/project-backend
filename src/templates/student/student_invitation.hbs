@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your OnWard Education Account is Ready!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .signature {
+            font-weight: bold;
+        }
+
+        .font_italic {
+            font-style: italic !important;
+        }
+
+        .name_header {
+            font-style: italic !important;
+            font-size: 24px;
+        }
+
+        .second-line {
+            margin-top: 20px;
+        }
+
+        .keyword {
+            text-decoration: underline;
+        }
+
+        .teamName {
+            margin-top: -12px;
+        }
+
+        .Divider {
+            height: 2px;
+            margin: 29.5px 0 29px 1px;
+            padding: 1px 0;
+            background-color: #f1f1f1;
+        }
+
+        .Line-1 {
+            height: 2px;
+            margin: 30px 0 0px 0px;
+            background-color: #f1f1f1;
+        }
+
+        .finishingLine1 {
+            margin-top: 29px;
+            font-size: 12px;
+        }
+
+        .finishingLine2 {
+            margin-top: -7px;
+            margin-left: -5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="content">
+            <div class="Line-1"></div>
+            <p>
+            <div class="name_header signature">
+                Hi {{name}},
+            </div>
+            </p>
+
+            <p class="font_italic">We’re delighted to let you know that your college has been officially added to our platform and your account with OnWard Education is now active!</p>
+            <p class="second-line font_italic">Go ahead and download the OnWard Education app on the App Store or Play Store to access your AI-powered solutions specifically designed for medical students during clinical placements.</p>
+            <p class="second-line font_italic">Here are your login details:<br /></p>
+            <p class="second-line font_italic">
+                Email: <span class="signature keyword">{{email}}</span><br />
+                Password: <span class="signature keyword">{{code}}</span></p>
+            <p class="font_italic">If you need any help or have questions, just reach out to us at <a href="mailto:hello@onward.ie">hello@onward.ie</a>. We’re always happy to help.</p>
+            <p class="signature">Welcome to OnWard!</p>
+            <div class="Divider"></div>
+        </div>
+    </div>
+</body>
+
+</html>

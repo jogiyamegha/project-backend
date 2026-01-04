@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Name",
+        "type": "defaultQuestions"
+    },
+    {
+        "name": "Age/DOB",
+        "type": "defaultQuestions"
+
+    },
+    {
+        "name": "Gender",
+        "type": "defaultQuestions"
+
+    },
+    {
+        "name": "Occupation",
+        "type": "defaultQuestions"
+
+    },
+    {
+        "name": "Place of Residence",
+        "type": "defaultQuestions"
+
+    },
+    {
+        "name": "Admission Details / Outpatient",
+        "type": "defaultQuestions"
+    }
+]
