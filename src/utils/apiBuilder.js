@@ -1,5 +1,6 @@
 const express = require("express");
 const adminAuth = require("../middleware/adminAuth");
+const userAuth = require("../middleware/userAuth");
 const Util = require("../utils/util");
 const {ApiResponseCode, ResponseStatus} = require("../utils/constants");
 const ValidationError = require("../utils/ValidationError");
@@ -58,6 +59,7 @@ const Builder = class {
         duplicateErrorHandler,
         middlewaresList = [],
         useAdminAuth = false,
+        useUserAuth = false,
         useAppSettingsAuth = false
     ) {
         this.useAdminAuth = () => {
@@ -71,7 +73,25 @@ const Builder = class {
                 duplicateErrorHandler,
                 middlewaresList,
                 true,
+                useUserAuth,
                 useAppSettingsAuth
+            );
+        };
+
+        this.useUserAuth = (allowedRoles = []) => {
+            return new Builder(
+                methodType,
+                root,
+                subPath,
+                executer,
+                router,
+                useAuthMiddleware,
+                duplicateErrorHandler,
+                middlewaresList,
+                false,
+                false,
+                true,
+                allowedRoles
             );
         };
 
@@ -86,6 +106,7 @@ const Builder = class {
                 duplicateErrorHandler,
                 middlewaresList,
                 useAdminAuth,
+                useUserAuth,
                 true
             );
         };
@@ -101,6 +122,7 @@ const Builder = class {
                 mDuplicateErrorHandler,
                 middlewaresList,
                 useAdminAuth,
+                useUserAuth,
                 useAppSettingsAuth
             );
         };
@@ -117,6 +139,7 @@ const Builder = class {
                 duplicateErrorHandler,
                 middlewaresList,
                 useAdminAuth,
+                useUserAuth,
                 useAppSettingsAuth
             );
         };
@@ -144,6 +167,7 @@ const Builder = class {
 
             let middlewares = [...middlewaresList];
             if (useAdminAuth) middlewares.push(adminAuth);
+            if (useUserAuth) middlewares.push(userAuth(this.allowedRoles));
             if (useAppSettingsAuth) middlewares.push(appSettings);
 
             router[methodType](root + subPath, ...middlewares, controller);

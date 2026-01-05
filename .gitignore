@@ -1,0 +1,8 @@
+node_modules/
+src/assets/db/
+src/notes.txt
+.vscode/settings.json
+/uploads
+config/dev.env
+.vscode/launch.json
+src/temp/

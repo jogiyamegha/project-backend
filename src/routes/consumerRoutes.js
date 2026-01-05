@@ -2,7 +2,7 @@ const API = require("../utils/apiBuilder");
 const {TableFields} = require("../utils/constants");
 const PlantController = require('../controllers/admin/PlantController');
 const DefaultController = require("../controllers/admin/DefaultController");
-const AuthController = require('../controllers/AuthController');
+const AuthController = require('../controllers/user/AuthController');
 const ImageHandler = require("../middleware/imageVerifier");
 
 const router = API.configRoute("/user")

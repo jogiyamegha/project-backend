@@ -1,6 +1,6 @@
-const UserService = require("../db/services/UserService");
-const {InterfaceTypes, TableFields, ValidationMsgs} = require("../utils/constants");
-const ValidationError = require("../utils/ValidationError");
+const UserService = require("../../db/services/UserService");
+const {InterfaceTypes, TableFields, ValidationMsgs} = require("../../utils/constants");
+const ValidationError = require("../../utils/ValidationError");
 
 exports.signUp = async (req) => {
     await UserService.insertUserRecord(req.body);
