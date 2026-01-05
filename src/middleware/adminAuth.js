@@ -17,7 +17,6 @@ const auth = async (req, res, next) => {
         const decoded = jwt.verify(headerToken, process.env.JWT_ADMIN_PK);
         const admin = await AdminService.getUserByIdAndToken(decoded[TableFields.ID], headerToken)
         .withBasicInfo()
-        .withApproved()
         .execute();
 
         if (!admin) {

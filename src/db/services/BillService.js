@@ -1,25 +1,32 @@
 const {ValidationMsgs, TableFields, TableNames, PlantStatus} = require("../../utils/constants");
-const {removeFileById, Folders} = require("../../utils/storage");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
-const Plant = require("../models/plant");
+const Bill = require("../models/bill");
 const {MongoUtil} = require("../mongoose");
 
-class PlantService {
+class BillService {
     static getUserById = (userId) => {
         return new ProjectionBuilder(async function () {
-            return await Plant.findOne({[TableFields.ID]: userId}, this);
+            return await Bill.findOne({[TableFields.ID]: userId}, this);
         });
     };
 
     static recordExists = async (recordId) => {
-        return await Plant.exists({
+        return await Bill.exists({
             [TableFields.ID]: MongoUtil.toObjectId(recordId),
         });
     };
 
+    static existForMonthPpaId = async (ppaId, billingMonth, billingYear) => {
+        return await Bill.exists({
+            [`${TableFields.ppaDetail}.${TableFields.ppaId}`] : MongoUtil.toObjectId(ppaId),
+            [TableFields.billingMonth]: billingMonth,
+            [TableFields.billingYear]: billingYear,
+        })
+    }
+
     static insertRecord = async (updatedFields) => {
-        const record = new Plant({
+        const record = new Bill({
             ...updatedFields,
         });
 
@@ -28,13 +35,13 @@ class PlantService {
         } catch (error) {
             if (error.code == 11000) {
                 //Mongoose duplicate email error
-                throw new ValidationError(ValidationMsgs.PlantExists);
+                throw new ValidationError(ValidationMsgs.BillExists);
             }
             throw error;
         }
     };
 
-    static listPlants = (filter = {}) => {
+    static listBills = (filter = {}) => {
         return new ProjectionBuilder(async function () {
             let limit = filter.limit || 0;
             let skip = filter.skip || 0;
@@ -44,42 +51,20 @@ class PlantService {
             let searchQuery = {};
 
             let searchTerm = filter.searchTerm;
-            if (searchTerm) {
-                searchQuery = {
-                    $or: [
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.address}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.city}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.state}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                    ],
-                };
-            }
 
-            if (filter.plantStatus) {
-                searchQuery[TableFields.plantStatus] = filter.plantStatus
+            if (filter.ppaId) {
+                searchQuery[`${TableFields.ppaDetail}.${TableFields.ppaId}`] = filter.ppaId
             }
-
-            if (filter.userId) {
-                searchQuery[`${TableFields.userDetails}.${TableFields.userId}`] = filter.userId
+            if (filter.billingMonth) {
+                searchQuery[TableFields.billingMonth] = filter.billingMonth
+            }
+            if (filter.billingYear) {
+                searchQuery[TableFields.billingYear] = filter.billingYear
             }
 
             return await Promise.all([
-                needCount ? Plant.countDocuments(searchQuery) : undefined,
-                Plant.find(searchQuery, this)
+                needCount ? Bill.countDocuments(searchQuery) : undefined,
+                Bill.find(searchQuery, this)
                     .limit(parseInt(limit))
                     .skip(parseInt(skip))
                     .sort({[sortKey]: parseInt(sortOrder)}),
@@ -184,30 +169,37 @@ const ProjectionBuilder = class {
         const projection = {};
         this.withBasicInfo = () => {
             projection[TableFields.ID] = 1;
-            projection[TableFields.userDetails] = 1;
-            projection[TableFields.propertyAddress] = 1;
-            projection[TableFields.plantStatus] = 1;
-            projection[TableFields.approvedBy] = 1;
-            projection[TableFields.rejectedBy] = 1;
-            projection[TableFields.isActive] = 1;
+            projection[TableFields.ppaDetail] = 1;
+            projection[TableFields.billingMonth] = 1;
+            projection[TableFields.billingYear] = 1;
+            projection[TableFields.generatedUnits] = 1;
+            projection[TableFields.consumedUnits] = 1;
+            projection[TableFields.exportedUnits] = 1;
+            projection[TableFields.isPaid] = 1;
             projection[TableFields.deleted] = 1;
             return this;
         };
+        this.withPaymentDetail = () => {
+            projection[TableFields.isPaid] = 1;
+            projection[TableFields.paymentRefId] = 1;
+            projection[TableFields.paymentDate] = 1;
+            return this;
+        }
         this.withTimeStamps = () => {
             projection[TableFields._createdAt] = 1;
             projection[TableFields._updatedAt] = 1;
             return this;
         };
+        this.withPaid = () => {
+            projection[TableFields.isPaid] = 1;
+            return this;
+        }
         this.withId = () => {
             projection[TableFields.ID] = 1;
             return this;
         };
-        this.withUser = () => {
-            projection[TableFields.userDetails] = 1;
-            return this;
-        };
-        this.withPlantStatus = () => {
-            projection[TableFields.plantStatus] = 1;
+        this.withPpaDetails = () => {
+            projection[TableFields.ppaDetail] = 1;
             return this;
         };
 
@@ -217,4 +209,4 @@ const ProjectionBuilder = class {
     }
 };
 
-module.exports = PlantService;
+module.exports = BillService;

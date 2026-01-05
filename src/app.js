@@ -17,7 +17,7 @@ app.use(
     })
 ); // To parse application/x-www-form-urlencoded
 app.use(require("./routes/adminRoutes"));
-app.use(require('./routes/consumerRoutes'));
+app.use(require('./routes/userRoutes'));
 // app.use(require('./routes/investorRoutes'));
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads"))); //to show image

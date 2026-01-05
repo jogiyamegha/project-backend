@@ -39,6 +39,24 @@ const TransactionStatus = (function () {
     TransactionStatus.InProgress = 4;
 
     return TransactionStatus;
+})();
+
+const Months = (function Months() {
+    function Months() {};
+    Months.January = 1;
+    Months.February = 2;
+    Months.March = 3;
+    Months.April = 4;
+    Months.May = 5;
+    Months.June = 6;
+    Months.July = 7;
+    Months.August = 8;
+    Months.September = 9;
+    Months.October = 10;
+    Months.November = 11;
+    Months.December = 12;
+    
+    return Months;
 })()
 
 const CmsTypes = (function () {
@@ -159,6 +177,17 @@ const ValidationMsgs = (function () {
     ValidationMsgs.PpaDocumentEmpty = 'PpaDocument required';
     ValidationMsgs.LeaseDocumentEmpty = 'LeaseDocument required';
     ValidationMsgs.UserIdEmpty = 'UserId required';
+    ValidationMsgs.PlantExists = 'Plant already Exists';
+    ValidationMsgs.RecordNotExists = 'Record Not Exists!';
+    ValidationMsgs.PpaExists = 'Ppa Exists';
+    ValidationMsgs.FileEmpty = "Please upload a file.";
+    ValidationMsgs.PlantNotApproveToCreatePpa = 'Plant is Not Approved yet To Create Ppa, please check & approve first!'
+    ValidationMsgs.PlantIdEmpty = 'Plant Id required';
+    ValidationMsgs.PpaAlreadyCreatedForPlant = 'Ppa Already is created for this plant';
+    ValidationMsgs.PpaIdEmpty = 'PpaId required';
+    ValidationMsgs.BillingMonthEmpty = 'Billing month required'
+    ValidationMsgs.BillingYearEmpty = 'Billing year required';
+    ValidationMsgs.BillAlreadyGeneratedForMonthPpa = "Bill of this month is already generated for this PPA";
     return ValidationMsgs;
 })();
 
@@ -187,6 +216,7 @@ const TableNames = (function () {
     TableNames.Investment = 'investments';
     TableNames.InvestorReturn = 'irnvestoreturns';
     TableNames.Plant = 'plants';
+    TableNames.Ppa = 'ppas';
     TableNames.User = 'users';
     TableNames.Wallet = 'wallets';
     TableNames.WalletTransaction = 'wallettransactions'
@@ -197,7 +227,7 @@ const AuthTypes = (function () {
     function types() {}
     types.Admin = 1;
     types.Investor = 2;
-    types.Farmer = 3;
+    types.Consumer = 3;
     return types;
 })();
 
@@ -281,6 +311,8 @@ const TableFields = (function () {
     TableFields.rejectionReason = 'rejectionReason';
     TableFields.plantDetail = 'plantDetail';
     TableFields.expectedYears = 'expectedYears';
+    TableFields.endDate = 'endDate';
+    TableFields.startDate = 'startDate';
     TableFields.ppaDocument = 'ppaDocument';
     TableFields.leaseDocument = 'leaseDocument';
     TableFields.isSigned = 'isSigned';
@@ -367,6 +399,7 @@ module.exports = {
     PlantStatus,
     TransactionType,
     TransactionStatus,
+    Months,
     Platforms,
     InterfaceTypes,
     AuthTypes,

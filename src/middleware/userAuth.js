@@ -28,7 +28,6 @@ const auth = (allowedRoles = []) => {
                 headerToken
             )
                 .withBasicInfo()
-                .withApproved()
                 .execute();
 
             if (!user) {
@@ -37,8 +36,7 @@ const auth = (allowedRoles = []) => {
                     message: Util.getErrorMessageFromString(ValidationMsgs.AuthFail),
                 });
             }
-
-            const userRole = user[TableFields.role] || user.userType;
+            const userRole = user.userType;
         
             if (allowedRoles.length && !allowedRoles.includes(userRole)) {
                 return res.status(ResponseStatus.Unauthorized).json({

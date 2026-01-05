@@ -222,10 +222,6 @@ const ProjectionBuilder = class {
             projection[TableFields.ID] = 1;
             return this;
         };
-        this.withApproved = () => {
-            projection[TableFields.approved] = 1;
-            return this;
-        };
         this.withName = () => {
             projection[TableFields.name_] = 1;
             return this;

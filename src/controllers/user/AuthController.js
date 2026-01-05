@@ -24,7 +24,7 @@ exports.login = async (req) => {
     if (!password) throw new ValidationError(ValidationMsgs.PasswordEmpty);
 
     let user = await UserService .findByEmail(email).withPassword().withUserType().withBasicInfo().execute();
-    if (user && (await user.isValidAuth(password)) && user[TableFields.active]) {
+    if (user && (await user.isValidAuth(password))) {
         const token = user.createAuthToken(InterfaceTypes.Admin.AdminWeb);
         await UserService .saveAuthToken(user[TableFields.ID], token);
         return {user, token};

@@ -10,15 +10,15 @@ const {
     InterfaceTypes,
 } = require("../../utils/constants");
 const ValidationError = require("../../utils/ValidationError");
-const Email = require("../../emails/email");
 const {Folders} = require("../../utils/metadata");
 const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/storage");
 
 exports.addPlant = async (req) => {
     let reqBody = req.body;
     let providedFiles = req.file || null;
-
+    let reqUser = req.user;
     await parseAndValidatePlant(
+        reqUser,
         reqBody, 
         undefined, 
         providedFiles, 
@@ -27,6 +27,15 @@ exports.addPlant = async (req) => {
         }
     );
 };
+
+exports.listMyPlants = async (req) => {
+    let reqUser = req.user;
+    return await PlantService.listPlants(
+        {
+            [TableFields.userId] : reqUser[TableFields.ID]
+        }
+    ).withBasicInfo().execute()
+}
 
 exports.updateCollege = async (req) => {
     let reqBody = req.body;
@@ -72,38 +81,15 @@ exports.getCollegeInfo = async (req) => {
     return record;
 };
 
-exports.listPlants = async (req) => {
-    return await PlantService.listPlants({
-        ...req.query,
-    })
-    .withBasicInfo()
-    .withTimeStamps()
-    .execute();
-};
-
-exports.updatePlantStatus = async(req) => {
-    const reqBody = req.body;
-    const plantId = req.params[TableFields.ID];
-    const reqUser = req.user;
-
-    const plantExists = await PlantService.recordExists(plantId);
-    if (!plantExists) {
-        throw new ValidationError(ValidationMsgs.RecordNotExists);
-    }
-
-    return await PlantService.updatePlantStatus(plantId, reqBody[TableFields.plantStatus], reqUser);
-}
-
 async function parseAndValidatePlant(
+    reqUser,
     reqBody,
     existingPlant = {},
     providedFile,
     onValidationCompleted = async () => {}
 ) {
     //Text fields validations
-    if (isFieldEmpty(reqBody[TableFields.userId], existingPlant[TableFields.userId])) {
-        throw new ValidationError(ValidationMsgs.UserIdEmpty);
-    }
+    console.log(reqBody);
     if (isFieldEmpty(reqBody[TableFields.propertyType], existingPlant[`${TableFields.propertyAddress}.${TableFields.propertyType}`])){
         throw new ValidationError(ValidationMsgs.PropertyTypeEmpty);
     }
@@ -120,10 +106,10 @@ async function parseAndValidatePlant(
         throw new ValidationError(ValidationMsgs.PincodeEmpty);
     }
     if (isFieldEmpty(reqBody[TableFields.billAmount], existingPlant[`${TableFields.propertyAddress}.${TableFields.billAmount}`])) {
-        throw new ValidationError(ValidationMsgs.PincodeEmpty);
+        throw new ValidationError(ValidationMsgs.BillAmountEmpty);
     }
 
-    const userInfo = await UserService.getUserById(reqBody[TableFields.userId]).withBasicInfo().execute();
+    const userInfo = await UserService.getUserById(reqUser[TableFields.ID]).withBasicInfo().execute();
 
     const existingImageKey = existingPlant[`${TableFields.propertyAddress}.${TableFields.billImage}`];
     let persistedImageKey = existingImageKey;

@@ -198,11 +198,12 @@ const ProjectionBuilder = class {
     constructor(methodToExecute) {
         const projection = {};
         this.withBasicInfo = () => {
-            projection[TableFields.name_] = 1;
             projection[TableFields.ID] = 1;
+            projection[TableFields.name_] = 1;
             projection[TableFields.email] = 1;
             projection[TableFields.userType] = 1;
-            projection[TableFields.active] = 1;
+            projection[TableFields.isActive] = 1;
+            projection[TableFields.deleted] = 1;
             return this;
         };
         this.withPassword = () => {

@@ -1,25 +1,30 @@
 const {ValidationMsgs, TableFields, TableNames, PlantStatus} = require("../../utils/constants");
-const {removeFileById, Folders} = require("../../utils/storage");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
-const Plant = require("../models/plant");
+const Ppa = require("../models/ppa");
 const {MongoUtil} = require("../mongoose");
 
-class PlantService {
+class PpaService {
     static getUserById = (userId) => {
         return new ProjectionBuilder(async function () {
-            return await Plant.findOne({[TableFields.ID]: userId}, this);
+            return await Ppa.findOne({[TableFields.ID]: userId}, this);
         });
     };
 
     static recordExists = async (recordId) => {
-        return await Plant.exists({
+        return await Ppa.exists({
             [TableFields.ID]: MongoUtil.toObjectId(recordId),
         });
     };
 
+    static existWithPlantId = async (plantId) => {
+        return await Ppa.exists({
+            [`${TableFields.plantDetail}.${TableFields.plantId}`] : MongoUtil.toObjectId(plantId)
+        })
+    }
+
     static insertRecord = async (updatedFields) => {
-        const record = new Plant({
+        const record = new Ppa({
             ...updatedFields,
         });
 
@@ -28,13 +33,13 @@ class PlantService {
         } catch (error) {
             if (error.code == 11000) {
                 //Mongoose duplicate email error
-                throw new ValidationError(ValidationMsgs.PlantExists);
+                throw new ValidationError(ValidationMsgs.PpaExists);
             }
             throw error;
         }
     };
 
-    static listPlants = (filter = {}) => {
+    static listPpa = (filter = {}) => {
         return new ProjectionBuilder(async function () {
             let limit = filter.limit || 0;
             let skip = filter.skip || 0;
@@ -44,42 +49,45 @@ class PlantService {
             let searchQuery = {};
 
             let searchTerm = filter.searchTerm;
-            if (searchTerm) {
-                searchQuery = {
-                    $or: [
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.address}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.city}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.state}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                    ],
-                };
+            // if (searchTerm) {
+            //     searchQuery = {
+            //         $or: [
+            //                 {
+            //                     [`${TableFields.propertyAddress}.${TableFields.address}`]: {
+            //                         $regex: Util.wrapWithRegexQry(searchTerm),
+            //                         $options: "i",
+            //                     },
+            //                 },
+            //                 {
+            //                     [`${TableFields.propertyAddress}.${TableFields.city}`]: {
+            //                         $regex: Util.wrapWithRegexQry(searchTerm),
+            //                         $options: "i",
+            //                     },
+            //                 },
+            //                 {
+            //                     [`${TableFields.propertyAddress}.${TableFields.state}`]: {
+            //                         $regex: Util.wrapWithRegexQry(searchTerm),
+            //                         $options: "i",
+            //                     },
+            //                 },
+            //         ],
+            //     };
+            // }
+            if (filter.plantId) {
+                searchQuery[`${TableFields.plantDetail}.${TableFields.plantId}`] = filter.plantId;
             }
-
-            if (filter.plantStatus) {
-                searchQuery[TableFields.plantStatus] = filter.plantStatus
-            }
-
+            
             if (filter.userId) {
-                searchQuery[`${TableFields.userDetails}.${TableFields.userId}`] = filter.userId
+                searchQuery[`${TableFields.plantDetail}.${TableFields.userId}`] = filter.userId;
+            }
+            
+            if (filter.isSigned) {
+                searchQuery[TableFields.isSigned] = filter.isSigned;
             }
 
             return await Promise.all([
-                needCount ? Plant.countDocuments(searchQuery) : undefined,
-                Plant.find(searchQuery, this)
+                needCount ? Ppa.countDocuments(searchQuery) : undefined,
+                Ppa.find(searchQuery, this)
                     .limit(parseInt(limit))
                     .skip(parseInt(skip))
                     .sort({[sortKey]: parseInt(sortOrder)}),
@@ -107,44 +115,6 @@ class PlantService {
             throw new ValidationError(ValidationMsgs.RecordNotFound);
         }
     };
-
-    static updatePlantStatus = async (recordId, plantStatus, user) => {
-        console.log(plantStatus);
-        const status = Number(plantStatus);
-
-        let updatePayload = {
-            [TableFields.plantStatus]: status,
-        };
-
-        if (status === PlantStatus.Approved) {
-            updatePayload[`${TableFields.approvedBy}.${TableFields.userDetails}`] = {
-                [TableFields.userId]: user[TableFields.ID],
-                [TableFields.userType]: user[TableFields.userType],
-                [TableFields.name_]: user[TableFields.name_],
-                [TableFields.approvedOn]: new Date(),
-            };
-        }
-
-        if (status === PlantStatus.Rejected) {
-            updatePayload[`${TableFields.rejectedBy}.${TableFields.userDetails}`] = {
-                [TableFields.userId]: user[TableFields.ID],
-                [TableFields.userType]: user[TableFields.userType],
-                [TableFields.name_]: user[TableFields.name_],
-                [TableFields.rejectedOn]: new Date(),
-                [TableFields.rejectionReason] : 'rejection reason'
-            };
-        }
-
-        await Plant.updateOne(
-            {
-                [TableFields.ID]: MongoUtil.toObjectId(recordId),
-            },
-            {
-                $set: updatePayload,
-            }
-        );
-    };
-
 
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {
         let records = undefined;
@@ -184,12 +154,15 @@ const ProjectionBuilder = class {
         const projection = {};
         this.withBasicInfo = () => {
             projection[TableFields.ID] = 1;
-            projection[TableFields.userDetails] = 1;
-            projection[TableFields.propertyAddress] = 1;
-            projection[TableFields.plantStatus] = 1;
-            projection[TableFields.approvedBy] = 1;
-            projection[TableFields.rejectedBy] = 1;
-            projection[TableFields.isActive] = 1;
+            projection[TableFields.plantDetail] = 1;
+            projection[TableFields.plantCapacity] = 1;
+            projection[TableFields.tarrif] = 1;
+            projection[TableFields.expectedYears] = 1;
+            projection[TableFields.startDate] = 1;
+            projection[TableFields.endDate] = 1;
+            projection[TableFields.ppaDocument] = 1;
+            projection[TableFields.leaseDocument] = 1;
+            projection[TableFields.isSigned] = 1;
             projection[TableFields.deleted] = 1;
             return this;
         };
@@ -202,19 +175,10 @@ const ProjectionBuilder = class {
             projection[TableFields.ID] = 1;
             return this;
         };
-        this.withUser = () => {
-            projection[TableFields.userDetails] = 1;
-            return this;
-        };
-        this.withPlantStatus = () => {
-            projection[TableFields.plantStatus] = 1;
-            return this;
-        };
-
         this.execute = async () => {
             return await methodToExecute.call(projection);
         };
     }
 };
 
-module.exports = PlantService;
+module.exports = PpaService;

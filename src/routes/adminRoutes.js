@@ -2,7 +2,8 @@ const API = require("../utils/apiBuilder");
 const {TableFields} = require("../utils/constants");
 const AuthController = require("../controllers/admin/AuthController");
 const PlantController = require('../controllers/admin/PlantController');
-const DefaultController = require("../controllers/admin/DefaultController");
+const PpaController = require('../controllers/admin/PpaController');
+const BillController = require("../controllers/admin/BillController");
 const ImageHandler = require("../middleware/imageVerifier");
 
 const router = API.configRoute("/admin")
@@ -54,43 +55,49 @@ const router = API.configRoute("/admin")
 .userMiddlewares(ImageHandler.single([TableFields.billImage]))
 .build()
 
+.addPath('/plant/list')
+.asGET(PlantController.listPlants)
+.useAdminAuth()
+.build()
 
+.addPath(`/plant/status/update/:${TableFields.ID}`)
+.asUPDATE(PlantController.updatePlantStatus)
+.useAdminAuth()
+.build()
 
 /**
  * -------------------------------------
- * CMS
+ * Ppa Routes
  * -------------------------------------
  */
-.addPath("/privacy-policy")
-.asPOST(DefaultController.editPrivacyPolicy)
-// .useAdminAuth()
+
+.addPath('/ppa/create')
+.asPOST(PpaController.createPpa)
+.useAdminAuth()
+.userMiddlewares(ImageHandler.multiplePDFAndImagesBasedOnType())
 .build()
 
-.addPath("/terms-conditions")
-.asPOST(DefaultController.editTermsAndConditions)
-// .useAdminAuth()
+.addPath('/ppa/list')
+.asGET(PpaController.listPPa)
+.useAdminAuth()
 .build()
-
-.addPath("/about-us")
-.asPOST(DefaultController.editAboutUs)
-// .useAdminAuth()
-.build()
-
 
 /**
  * -------------------------------------
- * App Settings Route
+ * Bill Routes
  * -------------------------------------
  */
-.addPath("/appSettings")
-.asUPDATE(DefaultController.updateAppSettings)
-// .useAdminAuth()
+
+.addPath('/bill/generate/')
+.asPOST(BillController.generateBill)
+.useAdminAuth()
 .build()
 
-.addPath("/appSettings/list")
-.asGET(DefaultController.getAppSettings)
-// .useAdminAuth()
+.addPath('/bill/list')
+.asGET(BillController.listBills)
+.useAdminAuth()
 .build()
+
 
 .getRouter();
 

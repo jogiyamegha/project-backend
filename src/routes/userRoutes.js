@@ -1,6 +1,6 @@
 const API = require("../utils/apiBuilder");
-const {TableFields} = require("../utils/constants");
-const PlantController = require('../controllers/admin/PlantController');
+const {TableFields, UserTypes} = require("../utils/constants");
+const PlantController = require('../controllers/user/PlantController');
 const DefaultController = require("../controllers/admin/DefaultController");
 const AuthController = require('../controllers/user/AuthController');
 const ImageHandler = require("../middleware/imageVerifier");
@@ -50,10 +50,14 @@ const router = API.configRoute("/user")
 
 .addPath('/plant/add')
 .asPOST(PlantController.addPlant)
-.useAdminAuth()
+.userMiddlewares(ImageHandler.single([TableFields.billImage]))
+.useUserAuth([UserTypes.Consumer])
 .build()
 
-
+.addPath('/my-plants')
+.asGET(PlantController.listMyPlants)
+.useUserAuth([UserTypes.Consumer])
+.build()
 
 /**
  * -------------------------------------

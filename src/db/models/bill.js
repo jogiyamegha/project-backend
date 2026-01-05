@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const {ValidationMsgs, TableNames, TableFields } = require("../../utils/constants");
+const {ValidationMsgs, TableNames, TableFields, Months } = require("../../utils/constants");
 
 const billSchema = new mongoose.Schema(
     {
@@ -25,10 +25,13 @@ const billSchema = new mongoose.Schema(
 
         },
         [TableFields.billingMonth] : {
-            type: String,
+            type: Number,
+            enum: Object.values(Months),
+            required: [true ,ValidationMsgs.BillingMonthEmpty]
         },
         [TableFields.billingYear] : {
             type: Number,
+            required: [true ,ValidationMsgs.BillingYearEmpty]
         },
         [TableFields.generatedUnits] : {
             type: Number,

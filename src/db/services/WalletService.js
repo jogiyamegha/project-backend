@@ -1,25 +1,25 @@
 const {ValidationMsgs, TableFields, TableNames, PlantStatus} = require("../../utils/constants");
-const {removeFileById, Folders} = require("../../utils/storage");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
-const Plant = require("../models/plant");
+const Wallet = require("../models/wallet");
 const {MongoUtil} = require("../mongoose");
 
-class PlantService {
+class WalletService {
     static getUserById = (userId) => {
         return new ProjectionBuilder(async function () {
-            return await Plant.findOne({[TableFields.ID]: userId}, this);
+            return await Wallet.findOne({[TableFields.ID]: userId}, this);
         });
     };
 
     static recordExists = async (recordId) => {
-        return await Plant.exists({
+        return await Wallet.exists({
             [TableFields.ID]: MongoUtil.toObjectId(recordId),
         });
     };
 
+
     static insertRecord = async (updatedFields) => {
-        const record = new Plant({
+        const record = new Wallet({
             ...updatedFields,
         });
 
@@ -28,13 +28,13 @@ class PlantService {
         } catch (error) {
             if (error.code == 11000) {
                 //Mongoose duplicate email error
-                throw new ValidationError(ValidationMsgs.PlantExists);
+                throw new ValidationError(ValidationMsgs.WalletExists);
             }
             throw error;
         }
     };
 
-    static listPlants = (filter = {}) => {
+    static listWallets = (filter = {}) => {
         return new ProjectionBuilder(async function () {
             let limit = filter.limit || 0;
             let skip = filter.skip || 0;
@@ -44,42 +44,20 @@ class PlantService {
             let searchQuery = {};
 
             let searchTerm = filter.searchTerm;
-            if (searchTerm) {
-                searchQuery = {
-                    $or: [
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.address}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.city}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.state}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                    ],
-                };
-            }
 
-            if (filter.plantStatus) {
-                searchQuery[TableFields.plantStatus] = filter.plantStatus
+            if (filter.ppaId) {
+                searchQuery[`${TableFields.ppaDetail}.${TableFields.ppaId}`] = filter.ppaId
             }
-
-            if (filter.userId) {
-                searchQuery[`${TableFields.userDetails}.${TableFields.userId}`] = filter.userId
+            if (filter.billingMonth) {
+                searchQuery[TableFields.billingMonth] = filter.billingMonth
+            }
+            if (filter.billingYear) {
+                searchQuery[TableFields.billingYear] = filter.billingYear
             }
 
             return await Promise.all([
-                needCount ? Plant.countDocuments(searchQuery) : undefined,
-                Plant.find(searchQuery, this)
+                needCount ? Wallet.countDocuments(searchQuery) : undefined,
+                Wallet.find(searchQuery, this)
                     .limit(parseInt(limit))
                     .skip(parseInt(skip))
                     .sort({[sortKey]: parseInt(sortOrder)}),
@@ -107,44 +85,6 @@ class PlantService {
             throw new ValidationError(ValidationMsgs.RecordNotFound);
         }
     };
-
-    static updatePlantStatus = async (recordId, plantStatus, user) => {
-        console.log(plantStatus);
-        const status = Number(plantStatus);
-
-        let updatePayload = {
-            [TableFields.plantStatus]: status,
-        };
-
-        if (status === PlantStatus.Approved) {
-            updatePayload[`${TableFields.approvedBy}.${TableFields.userDetails}`] = {
-                [TableFields.userId]: user[TableFields.ID],
-                [TableFields.userType]: user[TableFields.userType],
-                [TableFields.name_]: user[TableFields.name_],
-                [TableFields.approvedOn]: new Date(),
-            };
-        }
-
-        if (status === PlantStatus.Rejected) {
-            updatePayload[`${TableFields.rejectedBy}.${TableFields.userDetails}`] = {
-                [TableFields.userId]: user[TableFields.ID],
-                [TableFields.userType]: user[TableFields.userType],
-                [TableFields.name_]: user[TableFields.name_],
-                [TableFields.rejectedOn]: new Date(),
-                [TableFields.rejectionReason] : 'rejection reason'
-            };
-        }
-
-        await Plant.updateOne(
-            {
-                [TableFields.ID]: MongoUtil.toObjectId(recordId),
-            },
-            {
-                $set: updatePayload,
-            }
-        );
-    };
-
 
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {
         let records = undefined;
@@ -185,29 +125,36 @@ const ProjectionBuilder = class {
         this.withBasicInfo = () => {
             projection[TableFields.ID] = 1;
             projection[TableFields.userDetails] = 1;
-            projection[TableFields.propertyAddress] = 1;
-            projection[TableFields.plantStatus] = 1;
-            projection[TableFields.approvedBy] = 1;
-            projection[TableFields.rejectedBy] = 1;
-            projection[TableFields.isActive] = 1;
+            projection[TableFields.balance] = 1;
+            projection[TableFields.depositedAmount] = 1;
+            projection[TableFields.withdrawalAmount] = 1;
+            projection[TableFields.totalInvestedAmount] = 1;
+            projection[TableFields.totalReturn] = 1;
+            projection[TableFields.isPaid] = 1;
             projection[TableFields.deleted] = 1;
             return this;
         };
+        this.withPaymentDetail = () => {
+            projection[TableFields.isPaid] = 1;
+            projection[TableFields.paymentRefId] = 1;
+            projection[TableFields.paymentDate] = 1;
+            return this;
+        }
         this.withTimeStamps = () => {
             projection[TableFields._createdAt] = 1;
             projection[TableFields._updatedAt] = 1;
             return this;
         };
+        this.withPaid = () => {
+            projection[TableFields.isPaid] = 1;
+            return this;
+        }
         this.withId = () => {
             projection[TableFields.ID] = 1;
             return this;
         };
-        this.withUser = () => {
-            projection[TableFields.userDetails] = 1;
-            return this;
-        };
-        this.withPlantStatus = () => {
-            projection[TableFields.plantStatus] = 1;
+        this.withPpaDetails = () => {
+            projection[TableFields.ppaDetail] = 1;
             return this;
         };
 
@@ -217,4 +164,4 @@ const ProjectionBuilder = class {
     }
 };
 
-module.exports = PlantService;
+module.exports = WalletService;

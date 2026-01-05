@@ -1,6 +1,7 @@
 const moment = require("moment");
 
 const fs = require("fs");
+const { UserTypes, AuthTypes } = require("./constants");
 const Util = class {
     static isImageFile(fileOriginalName) {
         return fileOriginalName
@@ -343,5 +344,15 @@ const Util = class {
         return array[mid];
     }
     
+    static getAuthType(role) {
+        switch (role) {
+        case UserTypes.Investor:
+            return AuthTypes.Investor;
+        case UserTypes.Consumer:
+            return AuthTypes.Consumer;
+        default:
+            return AuthTypes.User;
+        }
+    }
 };
 module.exports = Util;

@@ -1,8 +1,10 @@
 const express = require("express");
 const adminAuth = require("../middleware/adminAuth");
 const userAuth = require("../middleware/userAuth");
+
+ 
 const Util = require("../utils/util");
-const {ApiResponseCode, ResponseStatus} = require("../utils/constants");
+const { ApiResponseCode, ResponseStatus } = require("../utils/constants");
 const ValidationError = require("../utils/ValidationError");
 const appSettings = require("../middleware/appSettings");
 
@@ -60,8 +62,12 @@ const Builder = class {
         middlewaresList = [],
         useAdminAuth = false,
         useUserAuth = false,
-        useAppSettingsAuth = false
+        useAppSettingsAuth = false,
+        allowedRoles = []  
     ) {
+
+        this.allowedRoles = allowedRoles;
+
         this.useAdminAuth = () => {
             return new Builder(
                 methodType,
@@ -73,12 +79,14 @@ const Builder = class {
                 duplicateErrorHandler,
                 middlewaresList,
                 true,
-                useUserAuth,
-                useAppSettingsAuth
+                false,
+                false,
+                false
             );
         };
 
-        this.useUserAuth = (allowedRoles = []) => {
+
+          this.useUserAuth = (allowedRoles = []) => {
             return new Builder(
                 methodType,
                 root,
@@ -89,9 +97,9 @@ const Builder = class {
                 duplicateErrorHandler,
                 middlewaresList,
                 false,
-                false,
                 true,
-                allowedRoles
+                false,
+                 allowedRoles
             );
         };
 
@@ -105,12 +113,13 @@ const Builder = class {
                 useAuthMiddleware,
                 duplicateErrorHandler,
                 middlewaresList,
-                useAdminAuth,
-                useUserAuth,
+                false,
+                false, 
                 true
             );
         };
 
+       
         this.setDuplicateErrorHandler = (mDuplicateErrorHandler) => {
             return new Builder(
                 methodType,
@@ -121,9 +130,7 @@ const Builder = class {
                 useAuthMiddleware,
                 mDuplicateErrorHandler,
                 middlewaresList,
-                useAdminAuth,
-                useUserAuth,
-                useAppSettingsAuth
+                useAdminAuth
             );
         };
 
@@ -150,23 +157,23 @@ const Builder = class {
                     let response = await executer(req, res);
                     res.status(ResponseStatus.Success).send(response);
                 } catch (e) {
-                    console.log(e);
                     if (e && duplicateErrorHandler) {
-                        res.status(ResponseStatus.InternalServerError).send(
-                            Util.getErrorMessageFromString(duplicateErrorHandler(e))
-                        );
+                        res
+                            .status(ResponseStatus.InternalServerError)
+                            .send(Util.getErrorMessageFromString(duplicateErrorHandler(e)));
                     } else {
-                        console.log("e", e);
                         if (e && e.name != ValidationError.name) {
                             console.log(e);
                         }
-                        res.status(ResponseStatus.BadRequest).send(Util.getErrorMessage(e));
+                        res
+                            .status(ResponseStatus.BadRequest)
+                            .send(Util.getErrorMessage(e));
                     }
                 }
             };
 
             let middlewares = [...middlewaresList];
-            if (useAdminAuth) middlewares.push(adminAuth);
+            if (useAdminAuth) middlewares.push(adminAuth); 
             if (useUserAuth) middlewares.push(userAuth(this.allowedRoles));
             if (useAppSettingsAuth) middlewares.push(appSettings);
 

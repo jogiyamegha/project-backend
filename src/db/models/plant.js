@@ -88,7 +88,6 @@ const plantSchema = new mongoose.Schema(
                 },
                 [TableFields.approvedOn] : {
                     type: Date,
-                    default: Date.now(),
                 }
             },
         },
@@ -108,7 +107,6 @@ const plantSchema = new mongoose.Schema(
                 },
                 [TableFields.rejectedOn] : {
                     type: Date,
-                    default: Date.now(),
                 },
                 [TableFields.rejectionReason] : {
                     type: String,
@@ -130,11 +128,9 @@ const plantSchema = new mongoose.Schema(
         },
         [TableFields._updatedAt]: {
             type: Date,
-            default: Date.now()
         },
          [TableFields._deletedAt]: {
             type: Date,
-            default: Date.now()
         },
     },
     {
