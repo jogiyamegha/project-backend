@@ -71,7 +71,6 @@ async function parseAndValidateBill(
     }
 
     const ppaInfo = await PpaService.getUserById(ppaId).withBasicInfo().execute();
-    console.log(ppaInfo);
     const totalAmount = reqBody[TableFields.consumedUnits] * ppaInfo?.[TableFields.tarrif]
     try {
         let response = await onValidationCompleted({

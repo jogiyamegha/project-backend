@@ -17,13 +17,13 @@ exports.addPlant = async (req) => {
     let reqBody = req.body;
     let providedFiles = req.file || null;
     let reqUser = req.user;
-    await parseAndValidatePlant(
+    return await parseAndValidatePlant(
         reqUser,
         reqBody, 
         undefined, 
         providedFiles, 
         async (updatedUserFields) => {
-            await PlantService.insertRecord(updatedUserFields);
+            return await PlantService.insertRecord(updatedUserFields);
         }
     );
 };
@@ -66,21 +66,6 @@ exports.updateCollege = async (req) => {
     );
 };
 
-exports.getCollegeInfo = async (req) => {
-    let record = await CollegeService.getUserById(req.params[TableFields.ID])
-    .withBasicInfo()
-    .withStudentCount()
-    .withImage()
-    .withBooleanFields()
-    .withTimeStamps()
-    .withImage()
-    .execute();
-    if (!record) {
-        throw new ValidationError(ValidationMsgs.RecordNotFound);
-    }
-    return record;
-};
-
 async function parseAndValidatePlant(
     reqUser,
     reqBody,
@@ -89,7 +74,6 @@ async function parseAndValidatePlant(
     onValidationCompleted = async () => {}
 ) {
     //Text fields validations
-    console.log(reqBody);
     if (isFieldEmpty(reqBody[TableFields.propertyType], existingPlant[`${TableFields.propertyAddress}.${TableFields.propertyType}`])){
         throw new ValidationError(ValidationMsgs.PropertyTypeEmpty);
     }
@@ -158,11 +142,4 @@ function isFieldEmpty(providedField, existingField) {
         return false;
     }
     return true;
-}
-
-async function getUserDashboard(userId, token) {
-    return {
-        user: await CollegeService.getUserById(userId).withBasicInfo().execute(),
-        token: token || undefined,
-    };
 }

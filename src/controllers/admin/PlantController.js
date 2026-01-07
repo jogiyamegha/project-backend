@@ -57,21 +57,6 @@ exports.updateCollege = async (req) => {
     );
 };
 
-exports.getCollegeInfo = async (req) => {
-    let record = await CollegeService.getUserById(req.params[TableFields.ID])
-    .withBasicInfo()
-    .withStudentCount()
-    .withImage()
-    .withBooleanFields()
-    .withTimeStamps()
-    .withImage()
-    .execute();
-    if (!record) {
-        throw new ValidationError(ValidationMsgs.RecordNotFound);
-    }
-    return record;
-};
-
 exports.listPlants = async (req) => {
     return await PlantService.listPlants({
         ...req.query,

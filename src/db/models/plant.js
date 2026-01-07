@@ -16,9 +16,6 @@ const plantSchema = new mongoose.Schema(
                 type: String,
                 trim: true,
             },
-            [TableFields.deleted] : {
-                type: Boolean
-            }
         },
         [TableFields.propertyAddress] : {
             [TableFields.propertyName] : {

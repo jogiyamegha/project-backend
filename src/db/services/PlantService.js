@@ -25,6 +25,7 @@ class PlantService {
 
         try {
             await record.save();
+            return record;
         } catch (error) {
             if (error.code == 11000) {
                 //Mongoose duplicate email error
@@ -109,7 +110,6 @@ class PlantService {
     };
 
     static updatePlantStatus = async (recordId, plantStatus, user) => {
-        console.log(plantStatus);
         const status = Number(plantStatus);
 
         let updatePayload = {

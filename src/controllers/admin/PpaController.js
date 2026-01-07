@@ -53,12 +53,12 @@ exports.createPpa = async (req) => {
         throw new ValidationError(ValidationMsgs.PpaAlreadyCreatedForPlant)
     }
 
-    await parseAndValidatePpa(
+    return await parseAndValidatePpa(
         reqBody, 
         undefined, 
         documents, 
         async (updatedUserFields) => {
-            await PpaService.insertRecord(updatedUserFields);
+            return await PpaService.insertRecord(updatedUserFields);
         }
     );
 };

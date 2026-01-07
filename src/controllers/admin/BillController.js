@@ -37,7 +37,7 @@ exports.generateBill = async (req) => {
 }
  
 exports.listBills = async (req) => {
-      return await BillService.listBills({
+    return await BillService.listBills({
         ...req.query
     }).withBasicInfo().execute()
 }
@@ -71,7 +71,6 @@ async function parseAndValidateBill(
     }
 
     const ppaInfo = await PpaService.getUserById(ppaId).withBasicInfo().execute();
-    console.log(ppaInfo);
     const totalAmount = reqBody[TableFields.consumedUnits] * ppaInfo?.[TableFields.tarrif]
     try {
         let response = await onValidationCompleted({
