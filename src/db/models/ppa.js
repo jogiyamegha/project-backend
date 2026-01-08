@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const {ValidationMsgs, TableNames, TableFields, UserTypes, PlantStatus} = require("../../utils/constants");
+const {ValidationMsgs, TableNames, TableFields, UserTypes, PlantStatus, PropertyTypes} = require("../../utils/constants");
 
 const ppaSchema = new mongoose.Schema(
     {
@@ -8,9 +8,28 @@ const ppaSchema = new mongoose.Schema(
             [TableFields.plantId] : {
                 type: mongoose.Schema.Types.ObjectId,   
             },
+            [TableFields.propertyType] : {
+                type: Number,
+                enum: Object.values(PropertyTypes),
+                required : [true, ValidationMsgs.PropertyTypeEmpty]
+            },
+            [TableFields.address] : {
+                type: String,
+                trim : true,
+                required : [true, ValidationMsgs.AddressEmpty]
+            },
+            [TableFields.city] : {
+                type: String,
+                trim : true,
+                required : [true, ValidationMsgs.CityEmpty]
+            },
             [TableFields.userId] : {
                 type: mongoose.Schema.Types.ObjectId,
             },
+            [TableFields.name_] : {
+                type: String,
+                trim: true
+            }
         },
         [TableFields.plantCapacity] :{ // size of plant 
             type: Number,

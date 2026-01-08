@@ -206,6 +206,10 @@ const ProjectionBuilder = class {
             projection[TableFields.userDetails] = 1;
             return this;
         };
+        this.withPropertyAddress = () => {
+            projection[TableFields.propertyAddress] = 1;
+            return this;
+        }
         this.withPlantStatus = () => {
             projection[TableFields.plantStatus] = 1;
             return this;

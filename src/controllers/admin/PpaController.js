@@ -231,6 +231,7 @@ async function parseAndValidatePpa(
 
     const plantInfo = await PlantService
         .getUserById(reqBody[TableFields.plantId])
+        .withBasicInfo()
         .withUser()
         .withPlantStatus()
         .execute();
@@ -248,7 +249,11 @@ async function parseAndValidatePpa(
 
     return await onValidationCompleted({
         [`${TableFields.plantDetail}.${TableFields.plantId}`]: reqBody[TableFields.plantId],
+        [`${TableFields.plantDetail}.${TableFields.propertyType}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.propertyType],
+        [`${TableFields.plantDetail}.${TableFields.address}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.address],
+        [`${TableFields.plantDetail}.${TableFields.city}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.city],
         [`${TableFields.plantDetail}.${TableFields.userId}`]: plantInfo?.[TableFields.userDetails]?.[TableFields.userId],
+        [`${TableFields.plantDetail}.${TableFields.name_}`]: plantInfo?.[TableFields.userDetails]?.[TableFields.name_],
         [TableFields.plantCapacity]: reqBody[TableFields.plantCapacity],
         [TableFields.tarrif]: reqBody[TableFields.tarrif],
         [TableFields.expectedYears]: reqBody[TableFields.expectedYears],
