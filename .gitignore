@@ -7,4 +7,5 @@ config/dev.env
 .vscode/launch.json
 src/temp/
 
-config/firebase_default.json
+config/firebase-default.json
+src/utils/google/firebase-dev.json
