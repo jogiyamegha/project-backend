@@ -9,3 +9,4 @@ src/temp/
 
 config/firebase_default.json
 src/utils/google/firebase-dev.json
+src/utils/subscriptionVerify.js:32
