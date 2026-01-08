@@ -4,6 +4,7 @@ const AuthController = require("../controllers/admin/AuthController");
 const PlantController = require('../controllers/admin/PlantController');
 const PpaController = require('../controllers/admin/PpaController');
 const BillController = require("../controllers/admin/BillController");
+const UserController = require("../controllers/admin/UserController");
 const ImageHandler = require("../middleware/imageVerifier");
 
 const router = API.configRoute("/admin")
@@ -42,6 +43,27 @@ const router = API.configRoute("/admin")
 .useAdminAuth()
 .build()
 
+/**
+ * -------------------------------------
+ * Dashboard Routes
+ * -------------------------------------
+ */
+
+.addPath('/dashboard')
+.asGET(AuthController.getDashboardData)
+.useAdminAuth()
+.build()
+
+/**
+ * -------------------------------------
+ * User Routes
+ * -------------------------------------
+ */
+
+.addPath('/user/list')
+.asGET(UserController.getAllUsers)
+.useAdminAuth()
+.build()
 
 /**
  * -------------------------------------
@@ -57,6 +79,11 @@ const router = API.configRoute("/admin")
 
 .addPath('/plant/list')
 .asGET(PlantController.listPlants)
+.useAdminAuth()
+.build()
+
+.addPath(`/plant/info/:${TableFields.ID}`)
+.asGET(PlantController.plantInfo)
 .useAdminAuth()
 .build()
 
@@ -79,6 +106,11 @@ const router = API.configRoute("/admin")
 
 .addPath('/ppa/list')
 .asGET(PpaController.listPPa)
+.useAdminAuth()
+.build()
+
+.addPath(`/ppa/info/:${TableFields.ID}`)
+.asGET(PpaController.ppaInfo)
 .useAdminAuth()
 .build()
 

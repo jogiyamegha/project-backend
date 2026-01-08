@@ -5,12 +5,13 @@ const fs = require("fs");
 const customViewsDirPath = path.join(__dirname, "../templates");
 const nodemailer = require("nodemailer");
 
-exports.sendForgotPasswordEmail = async (emailId, code) => {
+exports.sendForgotPasswordEmail = async (code, emailId, name) => {
     const resetPasswordTemplate = fs
-    .readFileSync(path.join(customViewsDirPath, "admin", "forgot_password.hbs"))
+    .readFileSync(path.join(customViewsDirPath, "user", "forgot_password.hbs"))
     .toString();
     let data = {
         code: code,
+        name: name,
     };
     const template = Handlebars.compile(resetPasswordTemplate);
     try {
@@ -82,9 +83,9 @@ async function sendEmail(receiverEmail, subject, htmlBodyContents, fromAddress =
         subject: subject,
         html: htmlBodyContents,
     };
-    if (process.env.disableEmail == true || process.env.disableEmail == "true") {
-        return;
-    }
+    // if (process.env.disableEmail == true || process.env.disableEmail == "true") {
+    //     return;
+    // }
     await transporter.sendMail(mailOptions);
 }
 function getTransportInfo() {

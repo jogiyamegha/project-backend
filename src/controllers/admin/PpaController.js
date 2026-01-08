@@ -72,6 +72,16 @@ exports.listPPa = async (req) => {
     .execute();
 };
 
+exports.ppaInfo = async (req) => {
+    const ppaId = req.params[TableFields.ID];
+    const ppa = await PpaService.getUserById(ppaId).withBasicInfo().execute();
+    if (!ppa) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+    return ppa;
+}
+
+
 exports.updatePlantStatus = async(req) => {
     const reqBody = req.body;
     const plantId = req.params[TableFields.ID];

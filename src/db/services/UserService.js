@@ -86,6 +86,52 @@ class UserService {
         });
     };
 
+    static listUsers = (filter = {}) => {
+        return new ProjectionBuilder(async function () {
+            let limit = filter.limit || 0;
+            let skip = filter.skip || 0;
+            let sortKey = filter.sortKey || TableFields._createdAt;
+            let sortOrder = filter.sortOrder || 1;
+            let needCount = Util.parseBoolean(filter.needCount);
+            let searchQuery = {};
+
+            let searchTerm = filter.searchTerm;
+            if (searchTerm) {
+                searchQuery = {
+                    $or: [
+                            {
+                                [TableFields.name_]: {
+                                    $regex: Util.wrapWithRegexQry(searchTerm),
+                                    $options: "i",
+                                },
+                            },
+                            {
+                                [TableFields.email]: {
+                                    $regex: Util.wrapWithRegexQry(searchTerm),
+                                    $options: "i",
+                                },
+                            },
+                        ],
+                };
+            }
+            if (filter.userType) {
+                searchQuery[TableFields.userType] = filter.userType;
+            }
+            
+            if (filter.isActive) {
+                searchQuery[TableFields.isActive] = filter.isActive;
+            }
+
+            return await Promise.all([
+                needCount ? User.countDocuments(searchQuery) : undefined,
+                User.find(searchQuery, this)
+                    .limit(parseInt(limit))
+                    .skip(parseInt(skip))
+                    .sort({[sortKey]: parseInt(sortOrder)}),
+            ]).then(([total, records]) => ({total, records}));
+        });
+    };
+
     static removeAuth = async (UserId, authToken) => {
         await User.updateOne(
             {
@@ -110,8 +156,8 @@ class UserService {
 
         let code;
         if (!user[TableFields.passwordResetToken]) {
-            // code = UserService.generateOTPCode();
-            code = "123456";
+            code = UserService.generateOTPCode();
+            // code = "123456";
             user[TableFields.passwordResetToken] = code;
             await user.save();
         } else code = user[TableFields.passwordResetToken];

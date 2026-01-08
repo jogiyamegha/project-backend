@@ -66,6 +66,15 @@ exports.listPlants = async (req) => {
     .execute();
 };
 
+exports.plantInfo = async (req) => {
+    const plantId = req.params[TableFields.ID];
+    const plant = await PlantService.getUserById(plantId).withBasicInfo().execute();
+    if (!plant) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+    return plant;
+}
+
 exports.updatePlantStatus = async(req) => {
     const reqBody = req.body;
     const plantId = req.params[TableFields.ID];

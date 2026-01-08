@@ -19,26 +19,23 @@ const router = API.configRoute("/user")
 .asPOST(AuthController.login)
 .build()
 
-.addPath("/logout")
-.asPOST(AuthController.logout)
-.useAdminAuth()
-.build()
-
-.addPath("/password/forgot")
+.addPath('/forgot/password')
 .asPOST(AuthController.forgotPassword)
 .build()
 
-.addPath("/verify/otp")
-.asPOST(AuthController.forgotPasswordCodeExists)
-.build()
-
-.addPath("/password/reset")
+.addPath("/reset/password")
 .asPOST(AuthController.resetPassword)
 .build()
 
-.addPath("/password/change")
+.addPath("/logout")
+.asPOST(AuthController.logout)
+.useUserAuth([UserTypes.Consumer, UserTypes.Investor])
+.build()
+
+
+.addPath("/change/password")
 .asUPDATE(AuthController.changePassword)
-.useAdminAuth()
+.useUserAuth([UserTypes.Consumer, UserTypes.Investor])
 .build()
 
 

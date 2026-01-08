@@ -1,8 +1,11 @@
 const AdminService = require("../../db/services/AdminService");
-const {InterfaceTypes, TableFields, ValidationMsgs} = require("../../utils/constants");
+const {InterfaceTypes, TableFields, ValidationMsgs, PlantStatus} = require("../../utils/constants");
 const Util = require("../../utils/util");
 const Email = require("../../emails/email");
 const ValidationError = require("../../utils/ValidationError");
+const PlantService = require("../../db/services/PlantService");
+const PpaService = require("../../db/services/PpaService");
+const UserService = require("../../db/services/UserService");
 
 exports.addAdminUser = async (req) => {
     if (Util.parseBoolean(req.headers.dbuser)) {
@@ -27,13 +30,29 @@ exports.login = async (req) => {
     const password = req.body[TableFields.password];
     if (!password) throw new ValidationError(ValidationMsgs.PasswordEmpty);
 
-    let user = await AdminService.findByEmail(email).withPassword().withUserType().withBasicInfo().execute();
-    if (user && (await user.isValidAuth(password))) {
-        const token = user.createAuthToken(InterfaceTypes.Admin.AdminWeb);
-        await AdminService.saveAuthToken(user[TableFields.ID], token);
-        return {user, token};
+    let admin = await AdminService.findByEmail(email).withPassword().withUserType().withBasicInfo().execute();
+    if (admin && (await admin.isValidAuth(password))) {
+        const token = admin.createAuthToken(InterfaceTypes.Admin.AdminWeb);
+        await AdminService.saveAuthToken(admin[TableFields.ID], token);
+        return {admin, token};
     } else throw new ValidationError(ValidationMsgs.UnableToLogin);
 };
+
+exports.getDashboardData = async (req) => {
+    const plants = await PlantService.listPlants({...req.query}).withId().execute();
+    const approvedPlants = await PlantService.listPlants({
+        plantStatus : PlantStatus.Approved,
+        ...req.query
+    }).withId().execute();
+    const ppa = await PpaService.listPpa({...req.query}).withId().execute();
+    const users = await UserService.listUsers({...req.query}).withId().execute();
+    return {
+        totalPlants : plants?.records.length || 0,
+        totalApprovedPlants : approvedPlants?.records.length || 0,
+        totalPpas : ppa?.records.length || 0,
+        totalUsers : users?.records.length || 0,
+    }
+}
 
 exports.logout = async (req) => {
     const headerToken = req.header("Authorization").replace("Bearer ", "");
@@ -60,9 +79,9 @@ exports.forgotPassword = async (req) => {
     providedEmail = (providedEmail + "").trim().toLowerCase();
 
     if (!providedEmail) throw new ValidationError(ValidationMsgs.EmailEmpty);
-
+    
     let {code, email} = await AdminService.getResetPasswordToken(providedEmail);
-    Email.sendForgotPasswordEmail(email, code);
+    Email.sendForgotPasswordEmail(email,name, code);
 };
 
 exports.resetPassword = async (req) => {

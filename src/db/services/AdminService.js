@@ -107,12 +107,11 @@ class AdminService {
     static getResetPasswordToken = async (email) => {
         let user = await AdminService.findByEmail(email).withId().withBasicInfo().withPasswordResetToken().execute();
         if (!user) throw new ValidationError(ValidationMsgs.AccountNotRegistered);
-        if (!user[TableFields.active]) throw new ValidationError(ValidationMsgs.UnableToForgotPassword);
 
         let code;
         if (!user[TableFields.passwordResetToken]) {
-            // code = AdminService.generateOTPCode();
-            code = "123456";
+            code = AdminService.generateOTPCode();
+            // code = "123456";
             user[TableFields.passwordResetToken] = code;
             await user.save();
         } else code = user[TableFields.passwordResetToken];
