@@ -175,6 +175,10 @@ const ProjectionBuilder = class {
             projection[TableFields.ID] = 1;
             return this;
         };
+        this.withSigned = () => {
+            projection[TableFields.isSigned] = 1;
+            return this;
+        };
         this.execute = async () => {
             return await methodToExecute.call(projection);
         };

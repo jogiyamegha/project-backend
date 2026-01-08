@@ -16,11 +16,9 @@ const billSchema = new mongoose.Schema(
             },
             [TableFields.tarrif] :{ //per uint price of electricity
                 type: Number,
-                required: [true, ValidationMsgs.TarrifEmpty],
             },
             [TableFields.plantCapacity] :{ // size of plant 
                 type: Number,
-                required: [true, ValidationMsgs.PlantCapacityEmpty],
             },
 
         },

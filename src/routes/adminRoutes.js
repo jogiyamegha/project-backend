@@ -130,6 +130,10 @@ const router = API.configRoute("/admin")
 .useAdminAuth()
 .build()
 
+.addPath(`/bill/info/:${TableFields.ID}`)
+.asGET(BillController.billInfo)
+.useAdminAuth()
+.build()
 
 .getRouter();
 

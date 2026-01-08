@@ -68,6 +68,7 @@ exports.listPPa = async (req) => {
         ...req.query,
     })
     .withBasicInfo()
+    .withSigned()
     .withTimeStamps()
     .execute();
 };

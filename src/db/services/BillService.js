@@ -53,7 +53,7 @@ class BillService {
             let searchTerm = filter.searchTerm;
 
             if (filter.ppaId) {
-                searchQuery[`${TableFields.ppaDetail}.${TableFields.ppaId}`] = filter.ppaId
+                searchQuery[`${TableFields.ppaDetail}?.${TableFields.ppaId}`] = filter.ppaId
             }
             if (filter.billingMonth) {
                 searchQuery[TableFields.billingMonth] = filter.billingMonth
@@ -175,6 +175,7 @@ const ProjectionBuilder = class {
             projection[TableFields.generatedUnits] = 1;
             projection[TableFields.consumedUnits] = 1;
             projection[TableFields.exportedUnits] = 1;
+            projection[TableFields.totalAmount] = 1;
             projection[TableFields.isPaid] = 1;
             projection[TableFields.deleted] = 1;
             return this;

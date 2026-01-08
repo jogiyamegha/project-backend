@@ -42,6 +42,10 @@ exports.listBills = async (req) => {
     }).withBasicInfo().execute()
 }
 
+exports.billInfo = async (req) => {
+    return await BillService.getUserById(req.params[TableFields.ID]).withBasicInfo().execute();
+}
+
 async function parseAndValidateBill(
     reqBody,
     existingBill = {},
