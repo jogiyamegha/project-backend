@@ -17,7 +17,7 @@ const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/st
 exports.addPlant = async (req) => {
     let reqBody = req.body;
     let providedFiles = req.file || null;
-
+    console.log(reqBody);
     await parseAndValidatePlant(
         reqBody, 
         undefined, 

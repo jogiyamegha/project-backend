@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const {ValidationMsgs, TableNames, TableFields, UserTypes, PlantStatus, PropertyTypes} = require("../../utils/constants");
+const { getUrl, Folders } = require("../../utils/storage");
 
 const plantSchema = new mongoose.Schema(
     {
@@ -136,6 +137,9 @@ const plantSchema = new mongoose.Schema(
             transform: function (doc, ret) {
                 delete ret.createdAt;
                 delete ret.updatedAt;
+                if (ret.hasOwnProperty([TableFields.billImage])) {
+                    ret[TableFields.billImage] = getUrl(Folders.BillImage, ret[TableFields.billImage]);
+                }
                 delete ret.__v;
             },
         },
