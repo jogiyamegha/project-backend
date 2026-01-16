@@ -188,6 +188,9 @@ const ValidationMsgs = (function () {
     ValidationMsgs.BillingMonthEmpty = 'Billing month required'
     ValidationMsgs.BillingYearEmpty = 'Billing year required';
     ValidationMsgs.BillAlreadyGeneratedForMonthPpa = "Bill of this month is already generated for this PPA";
+    ValidationMsgs.PlantUniqueNameEmpty = "Please enter Plant's Unique Name to approve";
+    ValidationMsgs.InvalidPlantUniqueName = 'Please enter a valid Plant Unique Name, it allows only characters and numbers';
+    ValidationMsgs.PpaNotSigned = 'PPA is not signed yet...'
     return ValidationMsgs;
 })();
 
@@ -291,6 +294,7 @@ const TableFields = (function () {
     TableFields.billDetail = 'billDetail';
     TableFields.billId = 'billId';
     TableFields.returnAmount = 'returnAmount';
+    TableFields.plantUniqueName = 'plantUniqueName';
     TableFields.userDetails = 'userDetails';
     TableFields.propertyAddress = 'propertyAddress';
     TableFields.propertyName = 'propertyName';

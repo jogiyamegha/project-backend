@@ -120,7 +120,7 @@ const router = API.configRoute("/admin")
  * -------------------------------------
  */
 
-.addPath('/bill/generate/')
+.addPath('/bill/generate')
 .asPOST(BillController.generateBill)
 .useAdminAuth()
 .build()

@@ -182,6 +182,11 @@ const Util = class {
         return v.length >= 7 && v.length <= 12;
     }
 
+    static isValidPlantUniqueName(name) {
+        const regEx = /^[a-zA-Z0-9]{1,50}$/;
+        return regEx.test(name);
+    }
+
     static isValidName = (name) => {
         const regEx = /^[a-zA-Z0-9\s]{1,50}$/;
         return regEx.test(name);

@@ -30,6 +30,7 @@ class PpaService {
 
         try {
             await record.save();
+            return record;
         } catch (error) {
             if (error.code == 11000) {
                 //Mongoose duplicate email error

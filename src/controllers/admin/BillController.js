@@ -14,6 +14,10 @@ exports.generateBill = async (req) => {
     if(!ppaId) {
         throw new ValidationError(ValidationMsgs.PpaIdEmpty)
     }
+    const ppa = await PpaService.getUserById(ppaId).withSigned().execute();
+    if(!ppa?.[TableFields.isSigned]) {
+        throw new ValidationError(ValidationMsgs.PpaNotSigned)
+    }
     if(!billingMonth) {
         throw new ValidationError(ValidationMsgs.BillingMonthEmpty)
     }

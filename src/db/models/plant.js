@@ -4,6 +4,11 @@ const { getUrl, Folders } = require("../../utils/storage");
 
 const plantSchema = new mongoose.Schema(
     {
+        [TableFields.plantUniqueName] : {
+            type: String,
+            trim: true,
+            // unique: true,
+        },
         [TableFields.userDetails]: {
             [TableFields.ID] :  false,
             [TableFields.userId] : {
@@ -137,14 +142,36 @@ const plantSchema = new mongoose.Schema(
             transform: function (doc, ret) {
                 delete ret.createdAt;
                 delete ret.updatedAt;
-                if (ret.hasOwnProperty([TableFields.billImage])) {
-                    ret[TableFields.billImage] = getUrl(Folders.BillImage, ret[TableFields.billImage]);
-                }
                 delete ret.__v;
+
+                if (
+                    ret[TableFields.propertyAddress] &&
+                    ret[TableFields.propertyAddress][TableFields.billImage]
+                ) {
+                    ret[TableFields.propertyAddress][TableFields.billImage] =
+                        getUrl(
+                            Folders.BillImage,
+                            ret[TableFields.propertyAddress][TableFields.billImage]
+                        );
+                }
+
+                return ret;
             },
         },
     }
 );
+
+plantSchema.index(
+    { [TableFields.plantUniqueName]: 1 },
+    {
+        unique: true,
+        partialFilterExpression: {
+            [TableFields.plantStatus]: PlantStatus.Approved,
+            [TableFields.plantUniqueName]: { $exists: true, $ne: null }
+        }
+    }
+);
+
 
 const Plant = mongoose.model(TableNames.Plant, plantSchema);
 module.exports = Plant;

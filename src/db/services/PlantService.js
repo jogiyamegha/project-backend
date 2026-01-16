@@ -23,6 +23,7 @@ class PlantService {
             ...updatedFields,
         });
 
+        console.log("record", record);
         try {
             await record.save();
             return record;
@@ -70,12 +71,17 @@ class PlantService {
                 };
             }
 
+            
+            if (filter.userId) {
+                searchQuery[`${TableFields.userDetails}.${TableFields.userId}`] = filter.userId;
+            }
+            
             if (filter.plantStatus) {
-                searchQuery[TableFields.plantStatus] = filter.plantStatus
+                searchQuery[TableFields.plantStatus] = Number(filter.plantStatus);
             }
 
-            if (filter.userId) {
-                searchQuery[`${TableFields.userDetails}.${TableFields.userId}`] = filter.userId
+            if (filter.propertyType) {
+                searchQuery[`${TableFields.propertyAddress}.${TableFields.propertyType}`] = Number(filter.propertyType)
             }
 
             return await Promise.all([
@@ -109,7 +115,7 @@ class PlantService {
         }
     };
 
-    static updatePlantStatus = async (recordId, plantStatus, user) => {
+    static updatePlantStatus = async (recordId, plantStatus, user, plantUniqueName) => {
         const status = Number(plantStatus);
 
         let updatePayload = {
@@ -117,6 +123,17 @@ class PlantService {
         };
 
         if (status === PlantStatus.Approved) {
+            if (!plantUniqueName) {
+                throw new ValidationError(ValidationMsgs.PlantUniqueNameEmpty)
+            }
+            const isValidPlantUniqueName = Util.isValidPlantUniqueName(plantUniqueName);
+            if(!isValidPlantUniqueName) {
+                throw new ValidationError(ValidationMsgs.InvalidPlantUniqueName);
+            }
+            const upperName = plantUniqueName.toUpperCase().trim();
+            
+            updatePayload[TableFields.plantUniqueName] = upperName;            
+            
             updatePayload[`${TableFields.approvedBy}.${TableFields.userDetails}`] = {
                 [TableFields.userId]: user[TableFields.ID],
                 [TableFields.userType]: user[TableFields.userType],
@@ -144,7 +161,6 @@ class PlantService {
             }
         );
     };
-
 
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {
         let records = undefined;

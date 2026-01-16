@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const {ValidationMsgs, TableNames, TableFields, UserTypes, PlantStatus, PropertyTypes} = require("../../utils/constants");
+const { getUrl, Folders } = require("../../utils/storage");
 
 const ppaSchema = new mongoose.Schema(
     {
@@ -8,20 +9,21 @@ const ppaSchema = new mongoose.Schema(
             [TableFields.plantId] : {
                 type: mongoose.Schema.Types.ObjectId,   
             },
+            [TableFields.propertyName] : {
+                type: String,
+                trim: true,
+            },
             [TableFields.propertyType] : {
                 type: Number,
                 enum: Object.values(PropertyTypes),
-                required : [true, ValidationMsgs.PropertyTypeEmpty]
             },
             [TableFields.address] : {
                 type: String,
                 trim : true,
-                required : [true, ValidationMsgs.AddressEmpty]
             },
             [TableFields.city] : {
                 type: String,
                 trim : true,
-                required : [true, ValidationMsgs.CityEmpty]
             },
             [TableFields.userId] : {
                 type: mongoose.Schema.Types.ObjectId,
@@ -64,7 +66,6 @@ const ppaSchema = new mongoose.Schema(
         },
         [TableFields.signedAt] : {
             type: Date,
-            default: Date.now
         },
         [TableFields.deleted] : {
             type: Boolean,
@@ -76,11 +77,9 @@ const ppaSchema = new mongoose.Schema(
         },
         [TableFields._updatedAt]: {
             type: Date,
-            default: Date.now()
         },
          [TableFields._deletedAt]: {
             type: Date,
-            default: Date.now()
         },
     },
     {
@@ -90,6 +89,13 @@ const ppaSchema = new mongoose.Schema(
                 delete ret.createdAt;
                 delete ret.updatedAt;
                 delete ret.__v;
+                
+                if (ret.hasOwnProperty([TableFields.ppaDocument])) {
+                    ret[TableFields.ppaDocument] = getUrl(Folders.PpaDocs, ret[TableFields.ppaDocument]);
+                };
+                if (ret.hasOwnProperty([TableFields.leaseDocument])) {
+                    ret[TableFields.leaseDocument] = getUrl(Folders.LeaseDocs, ret[TableFields.leaseDocument]);
+                };
             },
         },
     }

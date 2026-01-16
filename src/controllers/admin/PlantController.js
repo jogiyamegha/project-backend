@@ -17,53 +17,24 @@ const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/st
 exports.addPlant = async (req) => {
     let reqBody = req.body;
     let providedFiles = req.file || null;
-    console.log(reqBody);
-    await parseAndValidatePlant(
+    return await parseAndValidatePlant(
         reqBody, 
         undefined, 
         providedFiles, 
         async (updatedUserFields) => {
-            await PlantService.insertRecord(updatedUserFields);
-        }
-    );
-};
-
-exports.updateCollege = async (req) => {
-    let reqBody = req.body;
-    let providedFile = req.file || null;
-
-    let userId;
-    if (req.user[TableFields.authType] == AuthTypes.Admin) {
-        userId = req.params[TableFields.ID];
-    } else if (req.user[TableFields.authType] == AuthTypes.College) {
-        userId = req.user[TableFields.ID];
-    }
-
-    let userProfile = await CollegeService.getUserById(userId).withoutTokens().execute();
-    if (!userProfile) {
-        throw new ValidationError(ValidationMsgs.RecordNotFound);
-    }
-    return await parseAndValidateCollege(
-        reqBody,
-        userProfile,
-        providedFile,
-        userProfile[TableFields.regCompleted] ? false : true,
-        async (updatedUserFields) => {
-            await CollegeService.updateUserRecord(userId, updatedUserFields);
-            if (req.user[TableFields.authType] == AuthTypes.College) {
-                return await getUserDashboard(userId);
-            }
+            return await PlantService.insertRecord(updatedUserFields);
         }
     );
 };
 
 exports.listPlants = async (req) => {
-    return await PlantService.listPlants({
+    let result = await PlantService.listPlants({
         ...req.query,
     })
     .withBasicInfo()
     .withTimeStamps()
     .execute();
+    return result
 };
 
 exports.plantInfo = async (req) => {
@@ -76,7 +47,9 @@ exports.plantInfo = async (req) => {
 }
 
 exports.updatePlantStatus = async(req) => {
+    console.log("kanudo");
     const reqBody = req.body;
+    console.log(reqBody);
     const plantId = req.params[TableFields.ID];
     const reqUser = req.user;
 
@@ -85,14 +58,15 @@ exports.updatePlantStatus = async(req) => {
         throw new ValidationError(ValidationMsgs.RecordNotExists);
     }
 
-    return await PlantService.updatePlantStatus(plantId, reqBody[TableFields.plantStatus], reqUser);
+    console.log("hello frok here");
+    return await PlantService.updatePlantStatus(plantId, reqBody[TableFields.plantStatus], reqUser, reqBody[TableFields.plantUniqueName]);
 }
 
 async function parseAndValidatePlant(
     reqBody,
     existingPlant = {},
     providedFile,
-    onValidationCompleted = async () => {}
+    onValidationCompleted = async (updatedUserFields) => {}
 ) {
     //Text fields validations
     if (isFieldEmpty(reqBody[TableFields.userId], existingPlant[TableFields.userId])) {
@@ -116,12 +90,12 @@ async function parseAndValidatePlant(
     if (isFieldEmpty(reqBody[TableFields.billAmount], existingPlant[`${TableFields.propertyAddress}.${TableFields.billAmount}`])) {
         throw new ValidationError(ValidationMsgs.PincodeEmpty);
     }
-
+    
     const userInfo = await UserService.getUserById(reqBody[TableFields.userId]).withBasicInfo().execute();
-
+    
     const existingImageKey = existingPlant[`${TableFields.propertyAddress}.${TableFields.billImage}`];
     let persistedImageKey = existingImageKey;
-
+    
     try {
         if (providedFile) {
             let newImageKey = await addFile(
@@ -134,7 +108,7 @@ async function parseAndValidatePlant(
             persistedImageKey = newImageKey;
         }
 
-        let response = await onValidationCompleted({
+        let response =await onValidationCompleted({
             [`${TableFields.userDetails}.${TableFields.userId}`]: userInfo[TableFields.ID],
             [`${TableFields.userDetails}.${TableFields.userType}`]: userInfo[TableFields.userType],
             [`${TableFields.userDetails}.${TableFields.name_}`]: userInfo[TableFields.name_],
@@ -150,7 +124,6 @@ async function parseAndValidatePlant(
             [`${TableFields.propertyAddress}.${TableFields.billImage}`]: persistedImageKey,
             [`${TableFields.propertyAddress}.${TableFields.electricityRate}`]: reqBody[TableFields.electricityRate] || 0,
         });
-
         return response;
     } catch (error) {
         throw error;

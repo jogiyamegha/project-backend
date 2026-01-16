@@ -23,6 +23,7 @@ exports.createPpa = async (req) => {
         throw new ValidationError(ValidationMsgs.FileEmpty)
     }
 
+    console.log("reqBody in backend", reqBody);
     let documents = [];
     if(providedFiles.length > 0) {
         const docs = [];
@@ -58,6 +59,7 @@ exports.createPpa = async (req) => {
         undefined, 
         documents, 
         async (updatedUserFields) => {
+            console.log(updatedUserFields);
             return await PpaService.insertRecord(updatedUserFields);
         }
     );
@@ -214,7 +216,7 @@ async function parseAndValidatePpa(
     if (isFieldEmpty(reqBody[TableFields.expectedYears], existingPlant[TableFields.expectedYears])) {
         throw new ValidationError(ValidationMsgs.ExpectedYearsEmpty);
     }
-
+   
     if (isFieldEmpty(reqBody[TableFields.startDate], existingPlant[TableFields.startDate])) {
         throw new ValidationError(ValidationMsgs.StartDateEmpty);
     }
@@ -248,8 +250,10 @@ async function parseAndValidatePpa(
     const endDate = new Date(startDate);
     endDate.setFullYear(startDate.getFullYear() + Number(reqBody[TableFields.expectedYears]));
 
-    return await onValidationCompleted({
+    
+    const response = await onValidationCompleted({
         [`${TableFields.plantDetail}.${TableFields.plantId}`]: reqBody[TableFields.plantId],
+        [`${TableFields.plantDetail}.${TableFields.propertyName}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.propertyName],
         [`${TableFields.plantDetail}.${TableFields.propertyType}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.propertyType],
         [`${TableFields.plantDetail}.${TableFields.address}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.address],
         [`${TableFields.plantDetail}.${TableFields.city}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.city],
@@ -263,6 +267,8 @@ async function parseAndValidatePpa(
         [TableFields.ppaDocument]: persistedPpaKey,
         [TableFields.leaseDocument]: persistedLeaseKey,
     });
+    console.log("response",response);
+    return response;
 }
 
 function isFieldEmpty(providedField, existingField) {
