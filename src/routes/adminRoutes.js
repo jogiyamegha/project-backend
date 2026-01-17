@@ -114,6 +114,11 @@ const router = API.configRoute("/admin")
 .useAdminAuth()
 .build()
 
+.addPath(`/ppa/sign/:${TableFields.ID}`)
+.asUPDATE(PpaController.signPpa)
+.useAdminAuth()
+.build()
+
 /**
  * -------------------------------------
  * Bill Routes

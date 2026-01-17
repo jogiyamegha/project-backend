@@ -96,6 +96,16 @@ class PpaService {
         });
     };
 
+    static updateSign = async (ppaId) => {
+        return await Ppa.updateOne({
+            [TableFields.ID] : ppaId,
+            $set: {
+                [TableFields.isSigned] : true,
+                [TableFields.signedAt] : new Date()
+            }
+        })
+    }
+
     static updateRecord = async (recordId, updatedUserFields = {}) => {
         if (await DiseaseService.existsWithName(updatedUserFields[TableFields.name_], recordId)) {
             throw new ValidationError(ValidationMsgs.DiseaseExist);

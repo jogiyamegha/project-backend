@@ -84,7 +84,6 @@ exports.ppaInfo = async (req) => {
     return ppa;
 }
 
-
 exports.updatePlantStatus = async(req) => {
     const reqBody = req.body;
     const plantId = req.params[TableFields.ID];
@@ -98,6 +97,15 @@ exports.updatePlantStatus = async(req) => {
     return await PlantService.updatePlantStatus(plantId, reqBody[TableFields.plantStatus], reqUser);
 }
 
+exports.signPpa = async (req) => {
+    const ppaId = req.params[TableFields.ID];
+    const ppa = await PpaService.recordExists(ppaId);
+    if (!ppa) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+
+    return await PpaService.updateSign(ppaId);
+}
 // async function parseAndValidatePpa(
 //     reqBody,
 //     existingPlant = {},
