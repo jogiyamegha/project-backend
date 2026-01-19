@@ -248,6 +248,8 @@ const ProjectionBuilder = class {
             projection[TableFields.name_] = 1;
             projection[TableFields.email] = 1;
             projection[TableFields.userType] = 1;
+            projection[TableFields.phoneCountry] = 1;
+            projection[TableFields.phone] = 1;
             projection[TableFields.isActive] = 1;
             projection[TableFields.deleted] = 1;
             return this;
