@@ -168,6 +168,8 @@ const ProjectionBuilder = class {
         const projection = {};
         this.withBasicInfo = () => {
             projection[TableFields.ID] = 1;
+            projection[TableFields.ppaUniqueId] = 1;
+            projection[TableFields.ppaName] = 1;
             projection[TableFields.plantDetail] = 1;
             projection[TableFields.plantCapacity] = 1;
             projection[TableFields.tarrif] = 1;

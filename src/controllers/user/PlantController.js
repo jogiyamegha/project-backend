@@ -8,10 +8,12 @@ const {
     AuthTypes,
     TableNames,
     InterfaceTypes,
+    CounterSchemaType,
 } = require("../../utils/constants");
 const ValidationError = require("../../utils/ValidationError");
 const {Folders} = require("../../utils/metadata");
 const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/storage");
+const CounterService = require("../../db/services/CounterService");
 
 exports.addPlant = async (req) => {
     let reqBody = req.body;
@@ -73,7 +75,8 @@ async function parseAndValidatePlant(
     providedFile,
     onValidationCompleted = async () => {}
 ) {
-    //Text fields validations
+    const plantUniqueId = await CounterService.consumeSingleKey(CounterSchemaType.Plant);
+
     if (isFieldEmpty(reqBody[TableFields.propertyType], existingPlant[`${TableFields.propertyAddress}.${TableFields.propertyType}`])){
         throw new ValidationError(ValidationMsgs.PropertyTypeEmpty);
     }
@@ -111,6 +114,7 @@ async function parseAndValidatePlant(
         }
 
         let response = await onValidationCompleted({
+            [TableFields.plantUniqueId] : plantUniqueId,
             [`${TableFields.userDetails}.${TableFields.userId}`]: userInfo[TableFields.ID],
             [`${TableFields.userDetails}.${TableFields.userType}`]: userInfo[TableFields.userType],
             [`${TableFields.userDetails}.${TableFields.name_}`]: userInfo[TableFields.name_],

@@ -170,6 +170,7 @@ const ValidationMsgs = (function () {
     ValidationMsgs.CityEmpty = 'City required';
     ValidationMsgs.StateEmpty= 'State required';
     ValidationMsgs.PincodeEmpty = 'Pincode required';
+    ValidationMsgs.PpaNameEmpty = 'Ppa Name required';
     ValidationMsgs.BillImageEmpty = 'Bill required';
     ValidationMsgs.BillAmountEmpty = 'BillAmount required';
     ValidationMsgs.ExpectedYearsEmpty = 'Expected Years required';
@@ -245,9 +246,8 @@ const InquiryTypes = (function () {
 
 const CounterSchemaType = (function () {
     function types() {}
-    types.Case = "ct1"; //ct=counter type
-    types.Flashcard = "ct2"; //ct=counter type
-    types.Question = "ct3"; //ct=counter type
+    types.Plant = "ct1"; //ct=counter type
+    types.Ppa = "ct2"; //ct=counter type
     return types;
 })();
 
@@ -270,6 +270,8 @@ const TableFields = (function () {
     TableFields.isActive = "isActive";
     TableFields.deleted = "deleted";
     TableFields.ppaDetail = 'ppaDetail';
+    TableFields.ppaUniqueId = 'ppaUniqueId';
+    TableFields.ppaName = 'ppaName';
     TableFields.ppaId = 'ppaId';
     TableFields.plantId = 'plantId';
     TableFields.tarrif = "tarrif";
@@ -320,6 +322,8 @@ const TableFields = (function () {
     TableFields.ppaDocument = 'ppaDocument';
     TableFields.leaseDocument = 'leaseDocument';
     TableFields.isSigned = 'isSigned';
+    TableFields.value = 'value';
+    TableFields.plantUniqueId = "plantUniqueId";
     TableFields.signedAt = 'signedAt';
     TableFields.addressDetail = 'addressDetail';
     TableFields.balance = 'balance';

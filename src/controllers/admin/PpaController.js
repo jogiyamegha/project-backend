@@ -10,11 +10,13 @@ const {
     TableNames,
     InterfaceTypes,
     PlantStatus,
+    CounterSchemaType,
 } = require("../../utils/constants");
 const ValidationError = require("../../utils/ValidationError");
 const Email = require("../../emails/email");
 const {Folders} = require("../../utils/metadata");
 const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/storage");
+const CounterService = require("../../db/services/CounterService");
 
 exports.createPpa = async (req) => {
     let reqBody = req.body;
@@ -209,6 +211,11 @@ async function parseAndValidatePpa(
     providedFileArray,
     onValidationCompleted = async () => {}
 ) {
+    let ppaUniqueId =  await CounterService.consumeSingleKey(CounterSchemaType.Ppa);
+
+    if (isFieldEmpty(reqBody[TableFields.ppaName], existingPlant[TableFields.ppaName])){
+        throw new ValidationError(ValidationMsgs.PpaNameEmpty);
+    }
     if (isFieldEmpty(reqBody[TableFields.plantId], existingPlant[`${TableFields.plantDetail}.${TableFields.plantId}`])) {
         throw new ValidationError(ValidationMsgs.PlantIdEmpty);
     }
@@ -260,7 +267,11 @@ async function parseAndValidatePpa(
 
     
     const response = await onValidationCompleted({
+        [TableFields.ppaUniqueId] : ppaUniqueId,
+        [TableFields.ppaName] : reqBody[TableFields.ppaName],
         [`${TableFields.plantDetail}.${TableFields.plantId}`]: reqBody[TableFields.plantId],
+        [`${TableFields.plantDetail}.${TableFields.plantUniqueId}`]: plantInfo?.[TableFields.plantUniqueId],
+        [`${TableFields.plantDetail}.${TableFields.plantUniqueName}`]: plantInfo?.[TableFields.plantUniqueName],
         [`${TableFields.plantDetail}.${TableFields.propertyName}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.propertyName],
         [`${TableFields.plantDetail}.${TableFields.propertyType}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.propertyType],
         [`${TableFields.plantDetail}.${TableFields.address}`]: plantInfo?.[TableFields.propertyAddress]?.[TableFields.address],

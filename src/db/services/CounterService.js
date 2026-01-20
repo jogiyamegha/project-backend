@@ -32,13 +32,11 @@ class CounterService {
         const keys = [];
         let mPrefix = "";
         switch (record[TableFields.type]) {
-            case CounterSchemaType.Case:
-                mPrefix = "C";
+            case CounterSchemaType.Plant:
+                mPrefix = "PLANT-";
                 break;
-            case CounterSchemaType.Flashcard:
-                mPrefix = "F";
-                break;
-            case CounterSchemaType.Question:
+            case CounterSchemaType.Ppa:
+                mPrefix = "PPA-";
                 break;
         }
         for (let i = 0; i < totalKeysToConsume; i++) {

@@ -19,9 +19,13 @@ const counterSchema = new mongoose.Schema(
 
 const CounterRoot = mongoose.model(TableNames.Counter, counterSchema);
 
-const CaseCounter = CounterRoot.discriminator(CounterSchemaType.Case, counterSchema);
+// const CaseCounter = CounterRoot.discriminator(CounterSchemaType.Case, counterSchema);
+const PlantCounter = CounterRoot.discriminator(CounterSchemaType.Plant, counterSchema);
+const PpaCounter = CounterRoot.discriminator(CounterSchemaType.Ppa, counterSchema);
+
 
 module.exports = {
     CounterRoot,
-    CaseCounter,
+    PlantCounter,
+    PpaCounter
 };

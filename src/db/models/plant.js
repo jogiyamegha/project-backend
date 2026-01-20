@@ -4,10 +4,13 @@ const { getUrl, Folders } = require("../../utils/storage");
 
 const plantSchema = new mongoose.Schema(
     {
+        [TableFields.plantUniqueId] : {
+            type: String,
+            trim: true,
+        },
         [TableFields.plantUniqueName] : {
             type: String,
             trim: true,
-            // unique: true,
         },
         [TableFields.userDetails]: {
             [TableFields.ID] :  false,
@@ -161,17 +164,7 @@ const plantSchema = new mongoose.Schema(
     }
 );
 
-plantSchema.index(
-    { [TableFields.plantUniqueName]: 1 },
-    {
-        unique: true,
-        partialFilterExpression: {
-            [TableFields.plantStatus]: PlantStatus.Approved,
-            [TableFields.plantUniqueName]: { $exists: true, $ne: null }
-        }
-    }
-);
-
+plantSchema.index({[TableFields.plantUniqueId]: 1 }, { unique: true });
 
 const Plant = mongoose.model(TableNames.Plant, plantSchema);
 module.exports = Plant;

@@ -199,7 +199,9 @@ const ProjectionBuilder = class {
     constructor(methodToExecute) {
         const projection = {};
         this.withBasicInfo = () => {
-            projection[TableFields.ID] = 1;
+            projection[TableFields.ID] = 1;            
+            projection[TableFields.plantUniqueName] = 1;            
+            projection[TableFields.plantUniqueId] = 1;            
             projection[TableFields.userDetails] = 1;
             projection[TableFields.propertyAddress] = 1;
             projection[TableFields.plantStatus] = 1;

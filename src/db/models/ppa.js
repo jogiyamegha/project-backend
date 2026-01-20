@@ -4,10 +4,26 @@ const { getUrl, Folders } = require("../../utils/storage");
 
 const ppaSchema = new mongoose.Schema(
     {
+        [TableFields.ppaUniqueId] : {
+            type: String,
+            trim: true
+        },  
+        [TableFields.ppaName] : {
+            type: String,
+            trim: true
+        },
         [TableFields.plantDetail]: {
             [TableFields.ID] :  false,
             [TableFields.plantId] : {
                 type: mongoose.Schema.Types.ObjectId,   
+            },
+            [TableFields.plantUniqueId] : {
+                type: String,
+                trim: true
+            },
+            [TableFields.plantUniqueName] : {
+                type: String,
+                trim: true
             },
             [TableFields.propertyName] : {
                 type: String,
@@ -100,6 +116,7 @@ const ppaSchema = new mongoose.Schema(
         },
     }
 );
+ppaSchema.index({[TableFields.ppaUniqueId]: 1 }, { unique: true });
 
 const Ppa = mongoose.model(TableNames.Ppa, ppaSchema);
 module.exports = Ppa;

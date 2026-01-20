@@ -183,7 +183,7 @@ const Util = class {
     }
 
     static isValidPlantUniqueName(name) {
-        const regEx = /^[a-zA-Z0-9]{1,50}$/;
+        const regEx = /^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/;
         return regEx.test(name);
     }
 
