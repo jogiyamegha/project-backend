@@ -23,7 +23,6 @@ class PlantService {
             ...updatedFields,
         });
 
-        console.log("record", record);
         try {
             await record.save();
             return record;
@@ -49,6 +48,18 @@ class PlantService {
             if (searchTerm) {
                 searchQuery = {
                     $or: [
+                            {
+                                [TableFields.plantUniqueId] : {
+                                    $regex: Util.wrapWithRegexQry(searchTerm),
+                                    $options: "i",
+                                }
+                            },
+                            {
+                                [TableFields.plantUniqueName] : {
+                                    $regex: Util.wrapWithRegexQry(searchTerm),
+                                    $options: "i",
+                                }
+                            },
                             {
                                 [`${TableFields.propertyAddress}.${TableFields.address}`]: {
                                     $regex: Util.wrapWithRegexQry(searchTerm),

@@ -31,6 +31,34 @@ const TransactionType = (function () {
     return TransactionType;
 })();
 
+const PaymentTypes = (function () {
+    function PaymentTypes() {}
+    PaymentTypes.ConsumerPayment = 1;
+    PaymentTypes.InvestorPayment = 2;
+
+    return PaymentTypes;
+})();
+
+const UserPaymentMethod = (function (){
+    function UserPaymentMethod() {};
+    UserPaymentMethod.Cash = 1;
+    UserPaymentMethod.Online = 2;
+
+    return UserPaymentMethod;
+})()
+
+const PaymentStatusTypes = (function () {
+    function PaymentStatusTypes() {}
+    PaymentStatusTypes.Pending = 1;
+    PaymentStatusTypes.Processing = 2;
+    PaymentStatusTypes.Completed = 3;
+    PaymentStatusTypes.Failed = 4;
+    PaymentStatusTypes.Refunded = 5;
+    PaymentStatusTypes.Cancelled = 6;
+
+    return PaymentStatusTypes;
+})();
+
 const TransactionStatus = (function () {
     function TransactionStatus() {};
     TransactionStatus.Pending = 1;
@@ -39,6 +67,17 @@ const TransactionStatus = (function () {
     TransactionStatus.InProgress = 4;
 
     return TransactionStatus;
+})();
+
+const PayoutStatusTypes = (function () {
+    function PayoutStatusTypes() {}
+    PayoutStatusTypes.Pending = 1;
+    PayoutStatusTypes.Processing = 2;
+    PayoutStatusTypes.Completed = 3;
+    PayoutStatusTypes.Failed = 4;
+    PayoutStatusTypes.Cancelled = 5;
+
+    return PayoutStatusTypes;
 })();
 
 const Months = (function Months() {
@@ -192,6 +231,7 @@ const ValidationMsgs = (function () {
     ValidationMsgs.PlantUniqueNameEmpty = "Please enter Plant's Unique Name to approve";
     ValidationMsgs.InvalidPlantUniqueName = 'Please enter a valid Plant Unique Name, it allows only characters and numbers';
     ValidationMsgs.PpaNotSigned = 'PPA is not signed yet...'
+    ValidationMsgs.ConsumerStripeAccountEmpty = "Customer Stripe account not found"
     return ValidationMsgs;
 })();
 
@@ -222,6 +262,8 @@ const TableNames = (function () {
     TableNames.Plant = 'plants';
     TableNames.Ppa = 'ppas';
     TableNames.User = 'users';
+    TableNames.Payment = 'payments';
+    TableNames.Payout = 'payouts';
     TableNames.Wallet = 'wallets';
     TableNames.WalletTransaction = 'wallettransactions'
     return TableNames;
@@ -282,9 +324,18 @@ const TableFields = (function () {
     TableFields.consumedUnits = 'consumedUnits';
     TableFields.exportedUnits = 'exportedUnits';
     TableFields.totalAmount = 'totalAmount';
+    TableFields.stripeConsumerId = 'stripeConsumerId';
     TableFields.isPaid = 'isPaid';
+    TableFields.userPaymentMethod = 'userPaymentMethod';
     TableFields.paymentRefId = 'paymentRefId';
     TableFields.paymentDate = 'paymentDate';
+    TableFields.paymentIntentId = 'paymentIntentId';
+    TableFields.paymentMethodId = 'paymentMethodId';
+    TableFields.paymentMethodTypes = 'paymentMethodTypes';
+    TableFields.paymentReleased = 'paymentReleased';
+    TableFields.paymentReleasedAt = 'paymentReleasedAt';
+    TableFields.paymentReceived = 'paymentReceived';
+    TableFields.paymentReceivedAt = 'paymentReceivedAt';
     TableFields.type = 'type';
     TableFields.investorDetails = 'investorDetails';
     TableFields.investorId = 'investorId';
@@ -340,6 +391,25 @@ const TableFields = (function () {
     TableFields.transactionStatus = 'transactionStatus';
     TableFields.bankReferenceId = 'bankReferenceId';
     TableFields.note = 'note';
+    TableFields.billReference = 'billReference';
+    TableFields.userReference = 'userReference';
+    TableFields.paymentType = 'paymentType';
+    TableFields.amount = 'amount';
+    TableFields.currency = 'currency';
+    TableFields.payoutStatus = 'payoutStatus';
+    TableFields.stripePayoutId = 'stripePayoutId';
+    TableFields.stripeAccountId = 'stripeAccountId';
+    TableFields.payoutDate = 'payoutDate';
+    TableFields.paymentStatus = 'paymentStatus';
+    TableFields.stripeConsumerId = 'stripeConsumerId';
+    TableFields.stripePaymentIntentId = 'stripePaymentIntentId';
+    TableFields.stripePayoutId = 'stripePayoutId';
+    TableFields.paymentMethod = 'paymentMethod';
+    TableFields.paymentDate = 'paymentDate';
+    TableFields.failureReason = 'failureReason';
+    TableFields.metadata = 'metadata';
+    TableFields.stripeTransferId = 'stripeTransferId';
+    TableFields.stripePaymentIntentId = 'stripePaymentIntentId';
     TableFields.processedAt = 'processedAt';
     TableFields.processedBy = 'processedBy';
     TableFields._createdAt = "createdAt";
@@ -406,7 +476,11 @@ module.exports = {
     PropertyTypes,
     PlantStatus,
     TransactionType,
+    PaymentTypes,
+    UserPaymentMethod,
+    PaymentStatusTypes,
     TransactionStatus,
+    PayoutStatusTypes,
     Months,
     Platforms,
     InterfaceTypes,

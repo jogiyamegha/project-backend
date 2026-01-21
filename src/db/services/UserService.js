@@ -1,6 +1,7 @@
 const {TableFields, ValidationMsgs, UserTypes, TableNames} = require("../../utils/constants");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
+const {MongoUtil} = require('../../db/mongoose');
 const User = require("../models/user");
 
 class UserService {
@@ -149,6 +150,23 @@ class UserService {
         return Util.generateRandomPassword(6);
     };
 
+    static updateRecord = async (recordId, updatedUserFields = {}) => {
+        let record = await User.findByIdAndUpdate(
+            MongoUtil.toObjectId(recordId),
+            {
+                ...updatedUserFields,
+                [TableFields._updatedAt]: Date.now(),
+            },
+            {
+                new: false,
+                projection: {[TableFields.ID]: 1},
+            }
+        );
+        if (!record) {
+            throw new ValidationError(ValidationMsgs.RecordNotFound);
+        }
+    };
+
     static getResetPasswordToken = async (email) => {
         let user = await UserService.findByEmail(email).withId().withBasicInfo().withPasswordResetToken().execute();
         if (!user) throw new ValidationError(ValidationMsgs.AccountNotRegistered);
@@ -251,6 +269,7 @@ const ProjectionBuilder = class {
             projection[TableFields.phoneCountry] = 1;
             projection[TableFields.phone] = 1;
             projection[TableFields.isActive] = 1;
+            projection[TableFields.stripeConsumerId] = 1;
             projection[TableFields.deleted] = 1;
             return this;
         };

@@ -50,6 +50,18 @@ exports.billInfo = async (req) => {
     return await BillService.getUserById(req.params[TableFields.ID]).withBasicInfo().execute();
 }
 
+exports.updateCashPayment = async (req) => {
+    const billId = req.params[TableFields.ID];
+    if(!billId) {
+        throw new ValidationError('Parameter not getting')
+    }
+    const billInfo = await BillService.recordExists(billId);
+    if (!billInfo) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+    return await BillService.updateCashPayment(billId);
+}
+
 async function parseAndValidateBill(
     reqBody,
     existingBill = {},

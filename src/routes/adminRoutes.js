@@ -140,6 +140,17 @@ const router = API.configRoute("/admin")
 .useAdminAuth()
 .build()
 
+/**
+ * -------------------------------------
+ * Payment Routes
+ * -------------------------------------
+ */
+
+.addPath(`/update/cash-payment/:${TableFields.ID}`)
+.asUPDATE(BillController.updateCashPayment)
+.useAdminAuth()
+.build()
+
 .getRouter();
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const {ValidationMsgs, TableFields, TableNames, PlantStatus} = require("../../utils/constants");
+const {ValidationMsgs, TableFields, TableNames, PlantStatus, UserPaymentMethod} = require("../../utils/constants");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
 const Bill = require("../models/bill");
@@ -32,6 +32,7 @@ class BillService {
 
         try {
             await record.save();
+            return record;
         } catch (error) {
             if (error.code == 11000) {
                 //Mongoose duplicate email error
@@ -93,47 +94,32 @@ class BillService {
         }
     };
 
-    static updatePlantStatus = async (recordId, plantStatus, user) => {
-        console.log(plantStatus);
-        const status = Number(plantStatus);
-
-        let updatePayload = {
-            [TableFields.plantStatus]: status,
-        };
-
-        if (status === PlantStatus.Approved) {
-            updatePayload[`${TableFields.approvedBy}.${TableFields.userDetails}`] = {
-                [TableFields.userId]: user[TableFields.ID],
-                [TableFields.userType]: user[TableFields.userType],
-                [TableFields.name_]: user[TableFields.name_],
-                [TableFields.approvedOn]: new Date(),
-            };
-        }
-
-        if (status === PlantStatus.Rejected) {
-            updatePayload[`${TableFields.rejectedBy}.${TableFields.userDetails}`] = {
-                [TableFields.userId]: user[TableFields.ID],
-                [TableFields.userType]: user[TableFields.userType],
-                [TableFields.name_]: user[TableFields.name_],
-                [TableFields.rejectedOn]: new Date(),
-                [TableFields.rejectionReason] : 'rejection reason'
-            };
-        }
-
-        await Plant.updateOne(
+    static updateBillStatus = async (recordId, updatedFields = {}) => {
+        return await Bill.findOneAndUpdate(
+            MongoUtil.toObjectId(recordId),
             {
-                [TableFields.ID]: MongoUtil.toObjectId(recordId),
+                ...updatedFields,
+                [TableFields._updatedAt] : new Date()
+            },
+            { new: true }
+        )
+    }
+
+    static updateCashPayment = async (billId) => {
+        return await Bill.updateOne(
+            {
+                [TableFields.ID] : MongoUtil.toObjectId(billId),
             },
             {
-                $set: updatePayload,
+                [TableFields.userPaymentMethod] : UserPaymentMethod.Cash,
+                [TableFields.isPaid] : true,
+                [TableFields.paymentDate] : new Date(),
             }
-        );
-    };
-
+        )
+    }
 
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {
         let records = undefined;
-        // console.log(cascadeDeleteMethodReference, tableName, ...referenceId);
         switch (tableName) {
             case TableNames.Plant:
                 records = await Plant.find({

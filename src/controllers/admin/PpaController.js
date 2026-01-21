@@ -25,7 +25,6 @@ exports.createPpa = async (req) => {
         throw new ValidationError(ValidationMsgs.FileEmpty)
     }
 
-    console.log("reqBody in backend", reqBody);
     let documents = [];
     if(providedFiles.length > 0) {
         const docs = [];
@@ -61,7 +60,6 @@ exports.createPpa = async (req) => {
         undefined, 
         documents, 
         async (updatedUserFields) => {
-            console.log(updatedUserFields);
             return await PpaService.insertRecord(updatedUserFields);
         }
     );
@@ -108,102 +106,6 @@ exports.signPpa = async (req) => {
 
     return await PpaService.updateSign(ppaId);
 }
-// async function parseAndValidatePpa(
-//     reqBody,
-//     existingPlant = {},
-//     providedFileArray,
-//     onValidationCompleted = async () => {}
-// ) {
-//     console.log("providedFileArray", providedFileArray);
-    
-//     if (isFieldEmpty(reqBody[TableFields.plantId], existingPlant[`${TableFields.plantDetail}.${TableFields.plantId}`])) {
-//         throw new ValidationError(ValidationMsgs.PlantIdEmpty);
-//     }
-//     if (isFieldEmpty(reqBody[TableFields.plantCapacity], existingPlant[TableFields.plantCapacity])){
-//         throw new ValidationError(ValidationMsgs.PlantCapacityEmpty);
-//     }
-//     if (isFieldEmpty(reqBody[TableFields.tarrif], existingPlant[TableFields.tarrif])) {
-//         throw new ValidationError(ValidationMsgs.TarrifEmpty);
-//     }
-//     if (isFieldEmpty(reqBody[TableFields.expectedYears], existingPlant[TableFields.expectedYears])) {
-//         throw new ValidationError(ValidationMsgs.ExpectedYearsEmpty);
-//     }
-//     if (isFieldEmpty(reqBody[TableFields.startDate], existingPlant[TableFields.startDate])) {
-//         throw new ValidationError(ValidationMsgs.StartDateEmpty);
-//     }
-
-//     const ppaFile = providedFileArray?.[0];
-//     const leaseFile = providedFileArray?.[1];
-
-//     console.log("ppaFile",ppaFile);
-//     console.log("leaseFile",leaseFile);
-
-//     if (!ppaFile) {
-//         throw new ValidationError(ValidationMsgs.PpaDocumentEmpty);
-//     }
-    
-//     if (!leaseFile) {
-//         throw new ValidationError(ValidationMsgs.LeaseDocumentEmpty);
-//     }
-    
-//     const plantInfo = await PlantService.getUserById(reqBody[TableFields.plantId]).withUser().withPlantStatus().execute() 
-//     const currentPlantStatus = plantInfo?.[TableFields.plantStatus];
-//     if(currentPlantStatus !== PlantStatus.Approved) {
-//         throw new ValidationError(ValidationMsgs.PlantNotApproveToCreatePpa)
-//     }
-    
-//     const existingPpaFileKey = existingPlant[TableFields.ppaDocument];
-//     let persistedPpaKey = existingPpaFileKey;
-    
-//     const existingLeaseFileKey = existingPlant[TableFields.leaseDocument];
-//     let persistedLeaseKey = existingLeaseFileKey;
-    
-//     let response;
-//     try {
-//         if (ppaFile) {
-//             let newPpaFileKey = await addFile(
-//             Folders.PpaDocs,
-//                 providedFileArray[0].originalname,
-//                 providedFileArray[0].buffer, 
-//                 true,
-//                 providedFileArray[0]
-//             );
-
-//             console.log("here", newPpaFileKey);
-//             persistedPpaKey = newPpaFileKey;
-//         }
-        
-//         if (leaseFile) {
-//             let newLeaseFileKey = await addFile(
-//                 Folders.LeaseDocs,
-//                 providedFileArray?.[1].originalname,
-//                 providedFileArray?.[1].buffer,
-//                 true,
-//                 providedFileArray?.[1]
-//             );
-//             persistedLeaseKey = newLeaseFileKey;
-//         }
-//         const startDate = new Date(reqBody[TableFields.startDate]);
-//         let endDate = new Date(startDate);
-//         endDate.setFullYear(startDate.getFullYear() + Number(reqBody[TableFields.expectedYears]));
-
-//         response = await onValidationCompleted({
-//             [`${TableFields.plantDetail}.${TableFields.plantId}`]: reqBody[TableFields.plantId],
-//             [`${TableFields.plantDetail}.${TableFields.userId}`]: plantInfo?.[`${TableFields.userDetails}.${TableFields.userId}`],
-//             [TableFields.plantCapacity]: reqBody[TableFields.plantCapacity],
-//             [TableFields.tarrif]: reqBody[TableFields.tarrif],
-//             [TableFields.plantCapacity]: reqBody[TableFields.plantCapacity],
-//             [TableFields.expectedYears]: reqBody[TableFields.expectedYears],
-//             [TableFields.startDate]: reqBody[TableFields.startDate],
-//             [TableFields.endDate] : endDate,
-//             [TableFields.ppaDocument]: persistedPpaKey,
-//             [TableFields.leaseDocument]: persistedLeaseKey,
-//         });
-//         return response;
-//     } catch (error) {
-//         throw error;
-//     }
-// }
 
 async function parseAndValidatePpa(
     reqBody,
@@ -286,7 +188,6 @@ async function parseAndValidatePpa(
         [TableFields.ppaDocument]: persistedPpaKey,
         [TableFields.leaseDocument]: persistedLeaseKey,
     });
-    console.log("response",response);
     return response;
 }
 

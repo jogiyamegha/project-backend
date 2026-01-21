@@ -160,7 +160,6 @@ const Util = class {
     };
 
     static msToTime(duration) {
-        console.log(duration);
         var minutes = Math.floor((duration / (1000 * 60)) % 60),
             hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
 

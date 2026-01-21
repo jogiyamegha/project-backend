@@ -49,9 +49,7 @@ exports.plantInfo = async (req) => {
 }
 
 exports.updatePlantStatus = async(req) => {
-    console.log("kanudo");
     const reqBody = req.body;
-    console.log(reqBody);
     const plantId = req.params[TableFields.ID];
     const reqUser = req.user;
 
@@ -59,8 +57,6 @@ exports.updatePlantStatus = async(req) => {
     if (!plantExists) {
         throw new ValidationError(ValidationMsgs.RecordNotExists);
     }
-
-    console.log("hello frok here");
     return await PlantService.updatePlantStatus(plantId, reqBody[TableFields.plantStatus], reqUser, reqBody[TableFields.plantUniqueName]);
 }
 

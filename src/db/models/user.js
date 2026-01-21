@@ -74,6 +74,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        [TableFields.stripeConsumerId]: {
+            type: String,
+            trim: true,
+        },
     },
     {
         timestamps: true,

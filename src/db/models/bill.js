@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const {ValidationMsgs, TableNames, TableFields, Months } = require("../../utils/constants");
+const {ValidationMsgs, TableNames, TableFields, Months, UserPaymentMethod } = require("../../utils/constants");
 
 const billSchema = new mongoose.Schema(
     {
@@ -20,7 +20,6 @@ const billSchema = new mongoose.Schema(
             [TableFields.plantCapacity] :{ // size of plant 
                 type: Number,
             },
-
         },
         [TableFields.billingMonth] : {
             type: Number,
@@ -45,7 +44,10 @@ const billSchema = new mongoose.Schema(
         },
         [TableFields.totalAmount] : {
             type: Number,
-            default: 0
+        },
+        [TableFields.userPaymentMethod] : {
+            type: Number,
+            enum : Object.values(UserPaymentMethod),
         },
         [TableFields.isPaid] : {
             type: Boolean,
@@ -58,6 +60,24 @@ const billSchema = new mongoose.Schema(
         [TableFields.paymentDate] : {
             type: Date
         },
+        [TableFields.paymentIntentId]: {
+            type: String,
+            trim: true,
+        },
+        [TableFields.paymentMethodId]: {
+            type: String,
+            trim: true,
+        },
+        [TableFields.paymentMethodTypes]: {
+            type: [String],
+        },
+        [TableFields.paymentReleased]: {
+            type: Boolean,
+            default: false,
+        },
+        [TableFields.paymentReleasedAt]: {type: Date},
+        [TableFields.paymentReceived]: {type: Boolean, default: false},
+        [TableFields.paymentReceivedAt]: {type: Date},
         [TableFields.deleted] : {
             type: Boolean,
             default: false,
