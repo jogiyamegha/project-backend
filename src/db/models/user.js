@@ -62,6 +62,14 @@ const userSchema = new mongoose.Schema(
             type: Number,
             enum: Object.values(UserTypes),
         },
+        [TableFields.stripeAccountId]: {
+            type: String,
+            trim: true,
+        },
+        [TableFields.stripeCustomerId]: {
+            type: String,
+            trim: true,
+        },
         [TableFields.isActive] : {
             type: Boolean,
             default: true

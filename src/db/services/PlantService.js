@@ -1,9 +1,11 @@
 const {ValidationMsgs, TableFields, TableNames, PlantStatus} = require("../../utils/constants");
 const {removeFileById, Folders} = require("../../utils/storage");
+const { StripeManager } = require("../../utils/stripeManager");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
 const Plant = require("../models/plant");
 const {MongoUtil} = require("../mongoose");
+const UserService = require("./UserService");
 
 class PlantService {
     static getUserById = (userId) => {
@@ -126,7 +128,7 @@ class PlantService {
         }
     };
 
-    static updatePlantStatus = async (recordId, plantStatus, user, plantUniqueName) => {
+    static updatePlantStatus = async (plantId, plantStatus, user, plantUniqueName) => {
         const status = Number(plantStatus);
 
         let updatePayload = {
@@ -151,6 +153,22 @@ class PlantService {
                 [TableFields.name_]: user[TableFields.name_],
                 [TableFields.approvedOn]: new Date(),
             };
+
+            // create stripe customer Now
+            const plantDetail = await PlantService.getUserById(plantId).withUser().execute()
+            const customerId = plantDetail?.[TableFields.userDetails]?.[TableFields.userId];
+
+            const customerDetail = await UserService.getUserById(customerId).withBasicInfo().execute();
+            const stripeCustomer = await StripeManager.createCustomer(
+                customerDetail[TableFields.name_],
+                customerDetail[TableFields.email],
+                customerDetail[TableFields.phone],
+                customerDetail[TableFields.phoneCountry],
+            )
+
+            await UserService.updateRecord(customerId, {
+                [TableFields.stripeCustomerId] : stripeCustomer.id
+            })
         }
 
         if (status === PlantStatus.Rejected) {
@@ -165,7 +183,7 @@ class PlantService {
 
         await Plant.updateOne(
             {
-                [TableFields.ID]: MongoUtil.toObjectId(recordId),
+                [TableFields.ID]: MongoUtil.toObjectId(plantId),
             },
             {
                 $set: updatePayload,

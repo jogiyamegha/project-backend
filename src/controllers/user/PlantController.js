@@ -39,34 +39,6 @@ exports.listMyPlants = async (req) => {
     ).withBasicInfo().execute()
 }
 
-exports.updateCollege = async (req) => {
-    let reqBody = req.body;
-    let providedFile = req.file || null;
-
-    let userId;
-    if (req.user[TableFields.authType] == AuthTypes.Admin) {
-        userId = req.params[TableFields.ID];
-    } else if (req.user[TableFields.authType] == AuthTypes.College) {
-        userId = req.user[TableFields.ID];
-    }
-
-    let userProfile = await CollegeService.getUserById(userId).withoutTokens().execute();
-    if (!userProfile) {
-        throw new ValidationError(ValidationMsgs.RecordNotFound);
-    }
-    return await parseAndValidateCollege(
-        reqBody,
-        userProfile,
-        providedFile,
-        userProfile[TableFields.regCompleted] ? false : true,
-        async (updatedUserFields) => {
-            await CollegeService.updateUserRecord(userId, updatedUserFields);
-            if (req.user[TableFields.authType] == AuthTypes.College) {
-                return await getUserDashboard(userId);
-            }
-        }
-    );
-};
 
 async function parseAndValidatePlant(
     reqUser,

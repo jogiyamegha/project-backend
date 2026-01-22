@@ -151,17 +151,20 @@ class UserService {
     };
 
     static updateRecord = async (recordId, updatedUserFields = {}) => {
-        let record = await User.findByIdAndUpdate(
-            MongoUtil.toObjectId(recordId),
+        const record = await User.findByIdAndUpdate(
+            recordId,
             {
+                $set: {
                 ...updatedUserFields,
-                [TableFields._updatedAt]: Date.now(),
+                [TableFields._updatedAt]: new Date()
+                }
             },
             {
-                new: false,
-                projection: {[TableFields.ID]: 1},
+                new: true,
+                select: TableFields.ID
             }
         );
+
         if (!record) {
             throw new ValidationError(ValidationMsgs.RecordNotFound);
         }
@@ -269,7 +272,9 @@ const ProjectionBuilder = class {
             projection[TableFields.phoneCountry] = 1;
             projection[TableFields.phone] = 1;
             projection[TableFields.isActive] = 1;
-            projection[TableFields.stripeConsumerId] = 1;
+            projection[TableFields.addressDetail] = 1;
+            projection[TableFields.stripeCustomerId] = 1;
+            projection[TableFields.stripeAccountId] = 1;
             projection[TableFields.deleted] = 1;
             return this;
         };

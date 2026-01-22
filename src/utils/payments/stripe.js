@@ -173,7 +173,7 @@ class StripeManager {
             line_items: [
                 {
                     price_data: {
-                        currency: "eur",
+                        currency: "inr",
                         product_data: {name: eventTitle, description: eventDescription},
                         unit_amount: (price * 100).toFixed(0),
                     },
@@ -227,7 +227,7 @@ class StripeManager {
 
         return await stripe.transfers.create({
             amount: amount,
-            currency: "eur",
+            currency: "inr",
             destination: accountId,
             metadata: {
                 hostId: hostId.toString(),

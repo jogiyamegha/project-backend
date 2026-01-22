@@ -69,9 +69,9 @@ const router = API.configRoute("/user")
 .useUserAuth([UserTypes.Consumer])
 .build()
 
-.addPath('/payment/initiate')
-.asPOST(UserController.paymentInitiate)
-.useUserAuth([UserTypes.Consumer])
+.addPath("/payment/confirm-intent")
+.asPOST(UserController.confirmPaymentIntent)
+.useUserAuth()
 .build()
 
 /**

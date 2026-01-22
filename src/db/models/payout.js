@@ -26,7 +26,7 @@ const payoutSchema = new mongoose.Schema(
         // },
         [TableFields.currency]: {
             type: String,
-            default: "eur",
+            default: "inr",
             trim: true,
         },
         [TableFields.payoutStatus]: {

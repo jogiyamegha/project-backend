@@ -231,7 +231,8 @@ const ValidationMsgs = (function () {
     ValidationMsgs.PlantUniqueNameEmpty = "Please enter Plant's Unique Name to approve";
     ValidationMsgs.InvalidPlantUniqueName = 'Please enter a valid Plant Unique Name, it allows only characters and numbers';
     ValidationMsgs.PpaNotSigned = 'PPA is not signed yet...'
-    ValidationMsgs.ConsumerStripeAccountEmpty = "Customer Stripe account not found"
+    ValidationMsgs.ConsumerStripeAccountEmpty = "Customer Stripe account not found";
+    ValidationMsgs.PaymentIntentIdEmpty = "Payment intent ID is required";
     return ValidationMsgs;
 })();
 
@@ -299,6 +300,7 @@ const TableFields = (function () {
     TableFields.userId = "userId";
     TableFields.name_ = "name";
     TableFields.userType = "userType";
+    TableFields.stripeCustomerId = "stripeCustomerId";
     TableFields.phoneCountry = "phoneCountry";
     TableFields.phone = "phone";
     TableFields.platform = "platform";
@@ -324,7 +326,6 @@ const TableFields = (function () {
     TableFields.consumedUnits = 'consumedUnits';
     TableFields.exportedUnits = 'exportedUnits';
     TableFields.totalAmount = 'totalAmount';
-    TableFields.stripeConsumerId = 'stripeConsumerId';
     TableFields.isPaid = 'isPaid';
     TableFields.userPaymentMethod = 'userPaymentMethod';
     TableFields.paymentRefId = 'paymentRefId';

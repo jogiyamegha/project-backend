@@ -86,7 +86,7 @@ class StripeManager {
             line_items: [
                 {
                     price_data: {
-                        currency: "eur",
+                        currency: "inr",
                         product_data: {
                             name: "Delivery Service",
                             description: `Delivery payment for order #${deliveryId}`,
@@ -112,7 +112,7 @@ class StripeManager {
     // Create payment intent for mobile apps
     static createBookingPaymentIntent = async (customerId, amount, metadata = {}, options = {}, bookingId) => {
         const {
-            currency = "eur",
+            currency = "inr",
             paymentMethodTypes = ["card"],
             captureMethod = "automatic",
             confirmationMethod = "automatic",
@@ -139,6 +139,8 @@ class StripeManager {
     // Confirm payment intent (for manual confirmation)
     static confirmPaymentIntent = async (paymentIntentId, paymentMethodId = null) => {
         const confirmData = {};
+        console.log("confirmData",confirmData);
+        console.log("paymentMethodId",paymentMethodId);
 
         if (paymentMethodId) {
             confirmData.payment_method = paymentMethodId;
@@ -153,10 +155,10 @@ class StripeManager {
             },
         });
 
-        return;
+        // return;
 
-        return await stripeTest.paymentIntents.confirm(paymentIntentId);
-    };
+        // return await stripeTest.paymentIntents.confirm(paymentIntentId); //"error": "You cannot confirm this PaymentIntent because it's missing a payment method. To confirm the PaymentIntent with cus_Tpz6Qq139auoXz, specify a payment method attached to this customer along with the customer ID."
+    }; 
 
     // Update payment intent
     static updatePaymentIntent = async (paymentIntentId, updateData) => {
@@ -171,7 +173,7 @@ class StripeManager {
     };
 
     // Create customer for payment processing
-    static createConsumer = async (name, email, phone = null, phoneCountry = null) => {
+    static createCustomer = async (name, email, phone = null, phoneCountry = null) => {
         const customerData = {
             name: name,
             email: email,
@@ -183,8 +185,6 @@ class StripeManager {
             customerData.phone = phoneE164;
         }
 
-        console.log("aya pochi gyu",customerData);
-        console.log(process.env.STRIPE_SEC_KEY_TEST);
         return await stripeTest.customers.create(customerData);
     };
 

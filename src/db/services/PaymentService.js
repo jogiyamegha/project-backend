@@ -11,7 +11,6 @@ const UserService = require("./UserService");
 class PaymentService {
     // Create a new payment record
     static async createPayment(paymentData) {
-        console.log("paymentData",paymentData);
         const payment = new Payment(paymentData);
         return await payment.save();
     }
@@ -28,12 +27,11 @@ class PaymentService {
 
     // Create customer payment intent for mobile apps
    
-    static async createConsumerPaymentIntent(billId, consumerId, options = {}) {
+    static async createCustomerPaymentIntent(billId, customerId, options = {}) {
         try {
-            // Get Consumer for Stripe consumer ID
-            const consumer = await UserService.getUserById(consumerId).withBasicInfo().execute();
-            console.log(consumer);
-            if (!consumer || !consumer[TableFields.stripeConsumerId]) {
+            // Get customer for Stripe customer ID
+            const customer = await UserService.getUserById(customerId).withBasicInfo().execute();
+            if (!customer || !customer[TableFields.stripeCustomerId]) {
                 throw new ValidationError(ValidationMsgs.ConsumerStripeAccountEmpty);
             }
 
@@ -45,12 +43,12 @@ class PaymentService {
             
             // Create payment record
             const paymentData = {
-                [TableFields.userReference]: consumer,
+                [TableFields.userReference]: customer,
                 [TableFields.billReference]: billId,
                 [TableFields.paymentType]: PaymentTypes.ConsumerPayment,
                 [TableFields.amount]: netAmount,
                 [TableFields.paymentStatus]: PaymentStatusTypes.Pending,
-                [TableFields.stripeConsumerId]: consumer[TableFields.stripeConsumerId],
+                [TableFields.stripeCustomerId]: customer[TableFields.stripeCustomerId],
                 [TableFields.metadata]: {
                     billId: billId,
                 },
@@ -60,13 +58,13 @@ class PaymentService {
             console.log("🚀 ~ PaymentService ~ createCustomerPaymentIntent ~ payment:", payment);
             // Create Stripe payment intent
             const paymentIntent = await StripeManager.createBookingPaymentIntent(
-                consumer[TableFields.stripeConsumerId],
+                customer[TableFields.stripeCustomerId],
                 netAmount,
                 { paymentId: payment._id.toString(), billReference: billId, userReference: customerId.toString() },
                 options,
                 billId
             );
-            //console.log("🚀 ~ PaymentService ~ createCustomerPaymentIntent ~ paymentIntent:", paymentIntent);
+            console.log("🚀 ~ PaymentService ~ createCustomerPaymentIntent ~ paymentIntent:", paymentIntent);
 
             //Update payment with payment intent ID
             await this.updatePaymentStatus(payment._id, PaymentStatusTypes.Pending, {
@@ -93,6 +91,29 @@ class PaymentService {
         } catch (error) {
             console.error("Error creating payment intent:", error);
             throw new ValidationError(error.message || ValidationMsgs.PaymentFailed);
+        }
+    }
+
+    static confirmPaymentIntent = async (paymentIntentId, paymentMethodId = null) => {
+        try {
+            const paymentIntent = await StripeManager.confirmPaymentIntent(paymentIntentId);
+            console.log(paymentIntent);
+            
+            // If successful, process the payment
+            // if (paymentIntent.status === "succeeded") {
+            //     return await this.processPaymentIntentSuccess(paymentIntentId);
+            // }
+            return {
+                paymentIntent: {
+                    id: paymentIntent.id,
+                    status: paymentIntent.status,
+                    nextAction: paymentIntent.next_action,
+                },
+                requiresAction: paymentIntent.status === 'requires_action',
+            }
+        } catch (error) {
+            console.error("Error confirming payment intent:", error);
+            throw new ValidationError(error.message || "Failed to confirm payment");
         }
     }
 

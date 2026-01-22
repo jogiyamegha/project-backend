@@ -7,7 +7,7 @@ const { StripeManager } = require("../../utils/stripeManager");
 
 // Payment Intent Methods for mobile Apps
 exports.createPaymentIntent = async (req) => {
-    const consumerId = req.user[TableFields.ID];
+    const customerId = req.user[TableFields.ID];
     const { billId, options = {}} = req.body;
 
     if (!billId) {
@@ -15,8 +15,7 @@ exports.createPaymentIntent = async (req) => {
     }
 
     try {
-        const result = await PaymentService.createConsumerPaymentIntent(billId, consumerId, options);
-        console.log("result",result);
+        const result = await PaymentService.createCustomerPaymentIntent(billId, customerId, options);
         await BillService.updateBillStatus(billId, { [TableFields.paymentIntentId]: result.paymentIntent.id} );
         return {
             success: true,
@@ -28,21 +27,22 @@ exports.createPaymentIntent = async (req) => {
     }
 }
 
-exports.paymentInitiate = async (req) => {
-    const reqUser = req.user;
-    const userId = reqUser[TableFields.ID];
+exports.confirmPaymentIntent = async (req) => {
+    const { paymentIntentId, paymentMethodId } = req.body;
 
-    const user = await UserService.getUserById(userId).withBasicInfo().execute();
-
-    const stripeConsumer = await StripeManager.createConsumer(
-        user[TableFields.name_],
-        user[TableFields.email],
-        user[TableFields.phone],
-        user[TableFields.phoneCountry],
-    )
-    console.log("stripeConsumer",stripeConsumer);
-
-    await UserService.updateRecord(user[TableFields.ID], {
-        [TableFields.stripeAccountId] : stripeConsumer.id
-    })
+    if (!paymentIntentId) {
+        throw new ValidationError(ValidationMsgs.PaymentIntentIdEmpty)
+    }
+    try {
+        const result = await PaymentService.confirmPaymentIntent(paymentIntentId, paymentMethodId);
+        console.log("result",result);
+        return {
+            success: result.success,
+            message: result.success ? "Payment confirmed successfully" : "Payment requires additional action",
+            data: result,
+        }
+    } catch (error) {
+        console.error("Error confirming payment intent:", error);
+        throw new ValidationError(error.message || "Failed to confirm payment");
+    }
 }

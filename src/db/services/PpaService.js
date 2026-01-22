@@ -18,8 +18,10 @@ class PpaService {
     };
 
     static existWithPlantId = async (plantId) => {
+        console.log(plantId);
+        console.log([`${TableFields.plantDetail}.${TableFields.plantId}`]);
         return await Ppa.exists({
-            [`${TableFields.plantDetail}.${TableFields.plantId}`] : MongoUtil.toObjectId(plantId)
+            [`${TableFields.plantDetail}.${TableFields.plantId}`] : plantId
         })
     }
 
@@ -27,13 +29,14 @@ class PpaService {
         const record = new Ppa({
             ...updatedFields,
         });
+        console.log(record);
 
         try {
             await record.save();
             return record;
         } catch (error) {
             if (error.code == 11000) {
-                //Mongoose duplicate email error
+                //Mongoose duplicate error
                 throw new ValidationError(ValidationMsgs.PpaExists);
             }
             throw error;
