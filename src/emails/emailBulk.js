@@ -59,7 +59,7 @@ class BulkEmail {
         let htmlContent = template({name, code, email: emailId});
 
         let mailOptions = {
-            from: "Onward",
+            from: "Samran",
             to: emailId,
             subject: GeneralMessages.invitationEmailSubject,
             html: htmlContent,

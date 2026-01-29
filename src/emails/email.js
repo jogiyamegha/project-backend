@@ -75,7 +75,7 @@ function createHyperLinkTag(title, url) {
     return `<a href="${url}">${title}</a>`;
 }
 
-async function sendEmail(receiverEmail, subject, htmlBodyContents, fromAddress = "Onward") {
+async function sendEmail(receiverEmail, subject, htmlBodyContents, fromAddress = "Samran") {
     let transporter = getTransportInfo();
     let mailOptions = {
         from: fromAddress,

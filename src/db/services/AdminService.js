@@ -111,6 +111,7 @@ class AdminService {
         let code;
         if (!user[TableFields.passwordResetToken]) {
             code = AdminService.generateOTPCode();
+            console.log("otp code", code);
             // code = "123456";
             user[TableFields.passwordResetToken] = code;
             await user.save();
@@ -202,7 +203,7 @@ const ProjectionBuilder = class {
             projection[TableFields.ID] = 1;
             projection[TableFields.email] = 1;
             projection[TableFields.userType] = 1;
-            projection[TableFields.active] = 1;
+            projection[TableFields.isActive] = 1;
             return this;
         };
         this.withPassword = () => {

@@ -77,11 +77,12 @@ exports.forgotPasswordCodeExists = async (req) => {
 exports.forgotPassword = async (req) => {
     let providedEmail = req.body[TableFields.email];
     providedEmail = (providedEmail + "").trim().toLowerCase();
-
+    
     if (!providedEmail) throw new ValidationError(ValidationMsgs.EmailEmpty);
+    let admin = await AdminService.getUserByEmail(providedEmail).withBasicInfo().execute();
     
     let {code, email} = await AdminService.getResetPasswordToken(providedEmail);
-    Email.sendForgotPasswordEmail(email,name, code);
+    Email.sendForgotPasswordEmail(code, email, admin[TableFields.name_]);
 };
 
 exports.resetPassword = async (req) => {

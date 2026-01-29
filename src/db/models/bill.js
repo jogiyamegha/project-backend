@@ -14,6 +14,22 @@ const billSchema = new mongoose.Schema(
             [TableFields.userId] : {
                 type: mongoose.Schema.Types.ObjectId,
             },
+            [TableFields.ppaUniqueId] : {
+                type: String,
+                trim: true,
+            },
+            [TableFields.ppaName] : {
+                type: String,
+                trim: true,
+            },
+            [TableFields.plantUniqueId] : {
+                type: String,
+                trim: true,
+            },
+            [TableFields.plantUniqueName] : {
+                type: String,
+                trim: true,
+            },
             [TableFields.tarrif] :{ //per uint price of electricity
                 type: Number,
             },
