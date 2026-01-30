@@ -9,12 +9,15 @@ const {
     TableNames,
     InterfaceTypes,
     CounterSchemaType,
+    PropertyTypes,
+    PlantStatus,
 } = require("../../utils/constants");
 const ValidationError = require("../../utils/ValidationError");
 const Email = require("../../emails/email");
 const {Folders} = require("../../utils/metadata");
 const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/storage");
 const CounterService = require("../../db/services/CounterService");
+const Util = require("../../utils/util");
 
 exports.addPlant = async (req) => {
     let reqBody = req.body;
@@ -58,6 +61,91 @@ exports.updatePlantStatus = async(req) => {
         throw new ValidationError(ValidationMsgs.RecordNotExists);
     }
     return await PlantService.updatePlantStatus(plantId, reqBody[TableFields.plantStatus], reqUser, reqBody[TableFields.plantUniqueName]);
+}
+
+exports.downloadPlantReport = async (req, res) => {
+    try {
+        let filter = { ...req.query };
+
+        const allPlants = await PlantService.listPlants(filter)
+            .withBasicInfo()
+            .execute();
+
+        const resultData = [];
+        const UserTypeLabel = (type) => {
+            switch (type) {
+                case UserTypes.Admin:
+                    return "Admin";
+                case UserTypes.Investor:
+                    return "Investor";
+                case UserTypes.Consumer:
+                    return "Consumer";
+                default:
+                    return "-";
+            }
+        };
+        const PropertyTypeLabel = (type) => {
+            switch (type) {
+                case PropertyTypes.HousingSociety:
+                    return "Housing Society";
+                case PropertyTypes.ManufacturingUnit:
+                    return "Manufacturing Unit";
+                default:
+                    return "-";
+            }
+        };
+        const PlantStatusLabel = (type) => {
+            switch (type) {
+                case PlantStatus.Submitted:
+                    return "Submitted";
+                case PlantStatus.Approved:
+                    return "Approved";
+                case PlantStatus.Rejected:
+                    return "Rejected";
+                default:
+                    return "-";
+            }
+        };
+
+        for (const plant of allPlants.records) {
+            resultData.push({
+                "Plant's UniqueId" : plant?.[TableFields.plantUniqueId],
+                "Plant's Name" : plant?.[TableFields.plantUniqueName],
+                "User Name" : plant?.[TableFields.userDetails]?.[TableFields.name_],
+                "User Type" : UserTypeLabel(plant?.[TableFields.userDetails]?.[TableFields.userType]),
+                "Property Name" : plant?.[TableFields.propertyAddress]?.[TableFields.propertyName],
+                "Property Type" : PropertyTypeLabel(plant?.[TableFields.propertyAddress]?.[TableFields.propertyType]),
+                "Property Address" : plant?.[TableFields.propertyAddress]?.[TableFields.address],
+                "City" : plant?.[TableFields.propertyAddress]?.[TableFields.city],
+                "Pincode" : plant?.[TableFields.propertyAddress]?.[TableFields.pincode],
+                "State" : plant?.[TableFields.propertyAddress]?.[TableFields.state],
+                "RoofArea" : plant?.[TableFields.propertyAddress]?.[TableFields.roofArea],
+                "Bill Amount" : plant?.[TableFields.propertyAddress]?.[TableFields.billAmount],
+                "Electricity rate" : plant?.[TableFields.propertyAddress]?.[TableFields.electricityRate],
+                "Plant Status" : PlantStatusLabel(plant?.[TableFields.plantStatus]),
+            })
+        }
+        const columns = [
+            { width: 25 }, 
+            { width: 10 }, 
+            { width: 20 }, 
+            { width: 20 }, 
+            { width: 15 }, 
+            { width: 30 }, 
+            { width: 25 }, 
+            { width: 15 }, 
+        ];
+
+        const sheetName = "Plant Report";
+        const fileName = `plant_report_${new Date()
+        .toISOString()
+        .split("T")[0]}.xlsx`;
+
+        Util.exportToExcel(res, resultData, columns, sheetName, fileName);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
 
 async function parseAndValidatePlant(

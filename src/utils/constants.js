@@ -45,7 +45,7 @@ const UserPaymentMethod = (function (){
     UserPaymentMethod.Online = 2;
 
     return UserPaymentMethod;
-})()
+})();
 
 const PaymentStatusTypes = (function () {
     function PaymentStatusTypes() {}

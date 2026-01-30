@@ -52,15 +52,42 @@ class BillService {
             let searchQuery = {};
 
             let searchTerm = filter.searchTerm;
+            if (searchTerm) {
+                searchQuery = {
+                    $or: [
+                            {
+                                [`${TableFields.ppaDetail}.${TableFields.ppaName}`]: {
+                                    $regex: Util.wrapWithRegexQry(searchTerm),
+                                    $options: "i",
+                                },
+                            },
+                            {
+                                [`${TableFields.ppaDetail}.${TableFields.ppaUniqueId}`]: {
+                                    $regex: Util.wrapWithRegexQry(searchTerm),
+                                    $options: "i",
+                                },
+                            },
+                    ],
+                };
+            }
 
             if (filter.ppaId) {
-                searchQuery[`${TableFields.ppaDetail}?.${TableFields.ppaId}`] = filter.ppaId
+                searchQuery[`${TableFields.ppaDetail}.${TableFields.ppaId}`] = filter.ppaId;
+            }
+            if (filter.userId) {
+                searchQuery[`${TableFields.ppaDetail}.${TableFields.userId}`] = filter.userId;
             }
             if (filter.billingMonth) {
-                searchQuery[TableFields.billingMonth] = filter.billingMonth
+                searchQuery[TableFields.billingMonth] = filter.billingMonth;
             }
             if (filter.billingYear) {
-                searchQuery[TableFields.billingYear] = filter.billingYear
+                searchQuery[TableFields.billingYear] = filter.billingYear;
+            }
+            if (filter.userPaymentMethod) {
+                searchQuery[TableFields.userPaymentMethod] = filter.userPaymentMethod;
+            }
+            if (filter.isPaid) {
+                searchQuery[TableFields.isPaid] = filter.isPaid;
             }
 
             return await Promise.all([
@@ -163,6 +190,7 @@ const ProjectionBuilder = class {
             projection[TableFields.exportedUnits] = 1;
             projection[TableFields.totalAmount] = 1;
             projection[TableFields.isPaid] = 1;
+            projection[TableFields.userPaymentMethod] = 1;
             projection[TableFields.deleted] = 1;
             return this;
         };

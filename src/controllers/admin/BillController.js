@@ -1,9 +1,10 @@
 const { MongoUtil } = require('../../db/mongoose');
 const BillService = require('../../db/services/BillService');
-const { TableFields, ValidationMsgs, TableNames, UserTypes } = require('../../utils/constants');
+const { TableFields, ValidationMsgs, TableNames, UserTypes, UserPaymentMethod, Months } = require('../../utils/constants');
 const ValidationError = require('../../utils/ValidationError');
 const Util = require('../../utils/util');
 const PpaService = require('../../db/services/PpaService');
+const { plantInfo } = require('./PlantController');
 
 exports.generateBill = async (req) => {
     const reqBody = req.body;
@@ -52,6 +53,7 @@ exports.billInfo = async (req) => {
 
 exports.updateCashPayment = async (req) => {
     const billId = req.params[TableFields.ID];
+    console.log(billId);
     if(!billId) {
         throw new ValidationError('Parameter not getting')
     }
@@ -60,6 +62,106 @@ exports.updateCashPayment = async (req) => {
         throw new ValidationError(ValidationMsgs.RecordNotExists);
     }
     return await BillService.updateCashPayment(billId);
+}
+
+exports.downloadBillReport = async (req, res) => {
+    try {
+        let filter = { ...req.query };
+
+        const allBills = await BillService.listBills(filter)
+            .withBasicInfo()
+            .execute();
+        
+        const UserPaymentMethodLabel = (type) => {
+            switch (type) {
+                case UserPaymentMethod.Cash:
+                    return "Cash Payment";
+                case UserPaymentMethod.Online:
+                    return "Online Payment";
+                default:
+                    return "-";
+            }
+        };
+        const BillingMonthLabel = (type) => {
+            switch (type) {
+                case Months.January:
+                    return "January";
+                case Months.February:
+                    return "February";
+                case Months.March:
+                    return "March";
+                case Months.April:
+                    return "April";
+                case Months.May:
+                    return "May";
+                case Months.June:
+                    return "June";
+                case Months.July:
+                    return "July";
+                case Months.August:
+                    return "August";
+                case Months.September:
+                    return "September";
+                case Months.October:
+                    return "October";
+                case Months.November:
+                    return "November";
+                case Months.December:
+                    return "December";
+                default:
+                    return "-";
+            }
+        };
+        
+        const resultData = [];
+
+        for (const bill of allBills.records) {
+            resultData.push({
+                "PPA's UniqueId" : bill?.[TableFields.ppaDetail]?.[TableFields.ppaUniqueId],
+                "PPA's Name" : bill?.[TableFields.ppaDetail]?.[TableFields.ppaName],
+                "Plant's UniqueId" : bill?.[TableFields.ppaDetail]?.[TableFields.plantUniqueId],
+                "Plant's Name" : bill?.[TableFields.ppaDetail]?.[TableFields.plantUniqueName],
+                "Tarrif" : bill?.[TableFields.ppaDetail]?.[TableFields.tarrif],
+                "Plant's Capacity" : bill?.[TableFields.ppaDetail]?.[TableFields.plantCapacity],
+                "Billing Month" : BillingMonthLabel(bill?.[TableFields.billingMonth]),
+                "Billing Year" : bill?.[TableFields.billingYear],
+                "Generated Units" : bill?.[TableFields.generatedUnits],
+                "Consumed Units" : bill?.[TableFields.consumedUnits],
+                "Exported Units" : bill?.[TableFields.exportedUnits],
+                "Total Amount" : bill?.[TableFields.totalAmount],
+                "Is Paid?" : bill?.[TableFields.isPaid],
+                "User Payment Method" : UserPaymentMethodLabel(bill?.[TableFields.userPaymentMethod] || 'payment not done yet'),
+                "Payment Date" : bill?.[TableFields.isPaid] === true ? Util.formatToDdMmYyyyWithTime(bill?.[TableFields.paymentDate]) : 'payment not done yet',
+            })
+        }
+        const columns = [
+            { width: 20 }, 
+            { width: 10 }, 
+            { width: 10 }, 
+            { width: 20 }, 
+            { width: 15 }, 
+            { width: 30 }, 
+            { width: 10 }, 
+            { width: 15 }, 
+            { width: 15 }, 
+            { width: 15 }, 
+            { width: 15 }, 
+            { width: 15 }, 
+            { width: 10 }, 
+            { width: 25 }, 
+            { width: 35 }, 
+        ];
+
+        const sheetName = "Bill Report";
+        const fileName = `bill_report_${new Date()
+        .toISOString()
+        .split("T")[0]}.xlsx`;
+
+        Util.exportToExcel(res, resultData, columns, sheetName, fileName);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
 
 async function parseAndValidateBill(

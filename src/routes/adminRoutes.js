@@ -57,11 +57,20 @@ const router = API.configRoute("/admin")
 /**
  * -------------------------------------
  * Reports 
- * (cash payment, approved plants, rejected plants, submitted plants, plant add kre tyre plant detail ni pdf email upar ave)
+ * (cash payment, approved plants, rejected plants, submitted plants)
  * (bill, )
  * -------------------------------------
  */
 
+.addPath('/plant/report/download')
+.asGET(PlantController.downloadPlantReport)
+.useAdminAuth()
+.build()
+
+.addPath('/bill/report/download')
+.asGET(BillController.downloadBillReport)
+.useAdminAuth()
+.build()
 
 /**
  * -------------------------------------

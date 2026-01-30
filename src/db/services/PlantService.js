@@ -188,7 +188,6 @@ class PlantService {
                     ],
                 };
             }
-
             
             if (filter.userId) {
                 searchQuery[`${TableFields.userDetails}.${TableFields.userId}`] = filter.userId;

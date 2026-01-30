@@ -1,5 +1,5 @@
 const moment = require("moment");
-
+const xlsx = require("xlsx");
 const fs = require("fs");
 const { UserTypes, AuthTypes } = require("./constants");
 const Util = class {
@@ -213,6 +213,63 @@ const Util = class {
             }
         }
         return stringValue;
+    }
+
+    static exportToExcel(res, jsonData, columns, sheetName, fileName, meta = {}) {
+        const { startDate, endDate } = meta;
+
+        const worksheet = xlsx.utils.json_to_sheet(
+        jsonData,
+        ...(Object.keys(meta).length > 0 ? [{ origin: "A4" }] : []),
+        );
+
+        worksheet["!cols"] = columns;
+
+        if (jsonData.length === 0) {
+            xlsx.utils.sheet_add_aoa(worksheet, [["No records found"]], {
+                origin: "A4",
+            });
+        }
+
+        if (Object.keys(meta).length > 0) {
+            const hasData = jsonData.length > 0;
+            const colCount = hasData ? Object.keys(jsonData[0]).length : 1;
+
+            worksheet["A1"] = {
+                v: "SAMRAN",
+                s: { font: { bold: true } },
+            };
+
+            worksheet["A2"] = {
+                v: `WEEK PAYROLL - ${startDate} to ${endDate}`,
+                s: { font: { bold: true } },
+            };
+
+            worksheet["!merges"] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } },
+            ];
+        }
+
+        const workbook = xlsx.utils.book_new();
+        xlsx.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+        const buffer = xlsx.write(workbook, {
+            bookType: "xlsx",
+            type: "buffer",
+            cellStyles: true,
+        });
+
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        );
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${encodeURIComponent(fileName)}"`,
+        );
+
+        res.end(buffer);
     }
 
     static populateMissingDates = (dataObject, startDate, endDate) => {
