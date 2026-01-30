@@ -13,13 +13,14 @@ const {
 const ValidationError = require("../../utils/ValidationError");
 const {Folders} = require("../../utils/metadata");
 const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/storage");
+const Email = require("../../emails/email");
 const CounterService = require("../../db/services/CounterService");
 
-exports.addPlant = async (req) => {
+exports.addPlant = async (req, res) => {
     let reqBody = req.body;
     let providedFiles = req.file || null;
     let reqUser = req.user;
-    return await parseAndValidatePlant(
+    const data = await parseAndValidatePlant(
         reqUser,
         reqBody, 
         undefined, 
@@ -28,6 +29,26 @@ exports.addPlant = async (req) => {
             return await PlantService.insertRecord(updatedUserFields);
         }
     );
+
+    if (!data) {
+        throw new ValidationError(ValidationMsgs.RecordNotFound);
+    }
+
+    const adminEmail = 'parthvekariya124@gmail.com';
+
+    const file = await PlantService.generatePlantPdf(data);
+    console.log(file);
+    const emailData = {
+        reqUserName : reqUser[TableFields.name_],
+    }
+    Email.sentPlantForm(adminEmail, emailData, file)
+    // res.setHeader('Content-Type', 'application/pdf');
+    // res.setHeader(
+    //     'Content-Disposition',
+    //     'inline; filename="plant-details.pdf"'
+    // );
+
+    // return res.status(200).send(file);
 };
 
 exports.listMyPlants = async (req) => {

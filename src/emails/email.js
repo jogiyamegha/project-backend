@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const customViewsDirPath = path.join(__dirname, "../templates");
 const nodemailer = require("nodemailer");
+const Util = require("../utils/util");
 
 exports.sendForgotPasswordEmail = async (code, emailId, name) => {
     const resetPasswordTemplate = fs
@@ -21,22 +22,28 @@ exports.sendForgotPasswordEmail = async (code, emailId, name) => {
     }
 };
 
-exports.sendCollegeInvitationEmail = async (name, emailId, password) => {
-    const invitationTemplate = fs
-    .readFileSync(path.join(customViewsDirPath, "college", "college_invitation.hbs"))
-    .toString();
-    let data = {
-        name: name,
-        password: password,
-        email: emailId,
-    };
-    const template = Handlebars.compile(invitationTemplate);
+exports.sentPlantForm = async (email, emailData, fileBuffer) => {
+    const userPlantTemplate = fs
+        .readFileSync(path.join(customViewsDirPath, "user", "plant.hbs"))
+        .toString();
+    const template = Handlebars.compile(userPlantTemplate);
     try {
-        await sendEmail(emailId, GeneralMessages.invitationEmailSubject, template(data));
+        const date = Util.formatToDdMmYyyyWithTime()
+        const attachments = [
+            {
+                filename: `User_Added_Plant_${date}.pdf`,
+                content: fileBuffer,
+                contentType: "application/pdf",
+            }
+        ]
+        const data = { date, emailData }
+        const subject = GeneralMessages.PlantInfo + " | " + date
+        console.log("attachments",attachments);
+        await sendEmail(email, subject, template(data), attachments);
     } catch (e) {
         console.log(e);
     }
-};
+}
 
 exports.sendStudentInvitationEmail = async (name, emailId, code) => {
     const invitationTemplate = fs
@@ -75,13 +82,14 @@ function createHyperLinkTag(title, url) {
     return `<a href="${url}">${title}</a>`;
 }
 
-async function sendEmail(receiverEmail, subject, htmlBodyContents, fromAddress = "Samran") {
+async function sendEmail(receiverEmail, subject, htmlBodyContents, attachments = [], fromAddress = "Samran") {
     let transporter = getTransportInfo();
     let mailOptions = {
         from: fromAddress,
         to: receiverEmail,
         subject: subject,
         html: htmlBodyContents,
+        attachments: attachments,
     };
     // if (process.env.disableEmail == true || process.env.disableEmail == "true") {
     //     return;

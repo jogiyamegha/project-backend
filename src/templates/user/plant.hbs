@@ -1,0 +1,125 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .user-details {
+            background-color: #f9f9f9;
+            border-left: 4px solid #142897;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .user-details p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+            display: inline-block;
+            min-width: 120px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .confirm-button {
+            background-color: #142897;
+            border: none;
+            color: #fff;
+            padding: 12px 40px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .confirm-button:hover {
+            background-color: #103ea1;
+        }
+        .Divider {
+            height: 2px;
+            background-color: #f1f1f1;
+            margin: 20px 0;
+        }
+        .signature {
+            font-weight: bold;
+        }
+        .logo {
+            width: 150px;
+            height: 100px;
+        }
+        .info-text {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+        .highlight {
+            color: #142897;
+            font-weight: bold;
+        }
+    </style>
+  </head>
+
+    <body>
+        <div class="container">
+            {{!-- <div class="header">
+            <img src="{{logoUrl}}" alt="Dunreidy Logo" class="logo" />
+            </div> --}}
+            <div class="content">
+            <p>Dear Admin,</p>
+
+            <p>
+                We would like to notify you that
+                <strong>{{emailData.reqUserName}}</strong> has added a plant
+            </p>
+
+            <p>
+                Please review the plant details outlined below. The complete
+                plant document is provided as an attachment for further
+                information and approval, if required.
+            </p>
+
+            <p>
+                {{attachments}}
+            </p>
+            <p>
+                Thank you for your attention and cooperation.
+            </p>
+
+            <div class="Divider"></div>
+
+            <p class="signature">Kind regards,</p>
+            <p class="signature">Samran Team</p>
+            </div>
+        </div>
+    </body>
+
+</html>

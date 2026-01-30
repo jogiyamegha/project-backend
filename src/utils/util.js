@@ -78,6 +78,15 @@ const Util = class {
         return new Date("2099-12-31");
     }
 
+    static formatToDdMmYyyyWithTime(dateObj, utcOffset = 0) {
+        if (utcOffset) {
+            utcOffset = parseInt(utcOffset);
+        } else {
+            utcOffset = 0;
+        }
+        return moment(dateObj).utcOffset(-utcOffset).format("DD/MM/YYYY, hh:mm A"); //01/01/2021 00:00 AM
+    }
+
     static removeTime(dateObj) {
         if (!dateObj) {
             return;

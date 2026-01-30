@@ -56,6 +56,15 @@ const router = API.configRoute("/admin")
 
 /**
  * -------------------------------------
+ * Reports 
+ * (cash payment, approved plants, rejected plants, submitted plants, plant add kre tyre plant detail ni pdf email upar ave)
+ * (bill, )
+ * -------------------------------------
+ */
+
+
+/**
+ * -------------------------------------
  * User Routes
  * -------------------------------------
  */

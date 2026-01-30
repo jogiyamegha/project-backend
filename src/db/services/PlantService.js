@@ -6,6 +6,7 @@ const ValidationError = require("../../utils/ValidationError");
 const Plant = require("../models/plant");
 const {MongoUtil} = require("../mongoose");
 const UserService = require("./UserService");
+const PDFCreator = require("../../utils/pdfCreator")
 
 class PlantService {
     static getUserById = (userId) => {
@@ -36,6 +37,110 @@ class PlantService {
             throw error;
         }
     };
+
+    static generatePlantPdf = async (plant) => {
+        const utcOffset = 330;
+        const plantData = [];  
+        plantData.push(plant);
+    
+        let contents = [
+            ...PDFCreator.getTitleHeader('Plant Information',
+            null, null,
+            Util.formatToDdMmYyyyWithTime(new Date(), utcOffset))
+        ]
+    
+        contents.push(PDFCreator.getTwoLineBreak());
+
+        contents.push([{
+            columns: [
+                { text: `PLANT ID: ${plant[TableFields.plantUniqueId] || '-'}`, style: 'tableData3', alignment: 'left'},
+            ]
+        }]);
+    
+        contents.push(PDFCreator.getOneLineBreak());
+
+        contents.push([{
+            columns: [
+                { text: `Added By: ${plant?.[TableFields.userDetails]?.[TableFields.name_] || '-'}`, style: 'tableData3', alignment: 'left' }
+            ]
+        }]);
+        contents.push(PDFCreator.getOneLineBreak());
+        
+        contents.push({
+            columns: [
+                { text: `Plant (Property) Name: ${plant?.[TableFields.propertyAddress]?.[TableFields.propertyName]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        });
+    
+        contents.push(PDFCreator.getOneLineBreak());
+        
+        contents.push({
+            columns: [
+                { text: `Property Type: ${plant?.[TableFields.propertyAddress]?.[TableFields.propertyType]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        });
+    
+        contents.push(PDFCreator.getOneLineBreak());
+        
+        contents.push({
+            columns: [
+                { text: `Plant (Property) Address: ${plant?.[TableFields.propertyAddress]?.[TableFields.address]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        });
+        
+        contents.push(PDFCreator.getOneLineBreak());
+        
+        contents.push({
+            columns: [
+                { text: `Plant RoofArea : ${plant?.[TableFields.propertyAddress]?.[TableFields.roofArea]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        });
+    
+        contents.push(PDFCreator.getOneLineBreak());
+        
+        contents.push({
+            columns: [
+                { text: `Plant (Property) Pincode: ${plant?.[TableFields.propertyAddress]?.[TableFields.pincode]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        }); 
+        
+        contents.push(PDFCreator.getOneLineBreak());
+        
+        contents.push({
+            columns: [
+                { text: `Plant (Property) City: ${plant?.[TableFields.propertyAddress]?.[TableFields.city]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        });
+        
+        contents.push(PDFCreator.getOneLineBreak());
+        
+        contents.push({
+            columns: [
+                { text: `Plant (Property) State: ${plant?.[TableFields.propertyAddress]?.[TableFields.state]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        });
+    
+        contents.push(PDFCreator.getOneLineBreak());
+    
+        contents.push({
+            columns: [
+                { text: `Bill Amount: ${plant?.[TableFields.propertyAddress]?.[TableFields.billAmount]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        });
+        
+        contents.push(PDFCreator.getOneLineBreak());
+    
+        contents.push({
+            columns: [
+                { text: `Electricity rate: ${plant?.[TableFields.propertyAddress]?.[TableFields.electricityRate]}`, style: 'tableData3', alignment: 'left' },
+            ]
+        });
+
+        contents.push(PDFCreator.getOneLineBreak());
+
+        const file = await PDFCreator.generatePDFBuffer(contents)
+        return file;
+    }
 
     static listPlants = (filter = {}) => {
         return new ProjectionBuilder(async function () {

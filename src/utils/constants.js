@@ -249,6 +249,7 @@ const GeneralMessages = (function () {
     function GeneralMessages() {}
     GeneralMessages.forgotPasswordEmailSubject = "Reset your password";
     GeneralMessages.invitationEmailSubject = "Your OnWard Education Account is Ready!";
+    GeneralMessages.PlantInfo = "Plant Added";
     return GeneralMessages;
 })();
 
