@@ -155,6 +155,7 @@ const Builder = class {
             let controller = async (req, res) => {
                 try {
                     let response = await executer(req, res);
+                    if (res.headersSent) return;
                     res.status(ResponseStatus.Success).send(response);
                 } catch (e) {
                     if (e && duplicateErrorHandler) {

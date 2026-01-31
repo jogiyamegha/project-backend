@@ -158,6 +158,7 @@ exports.downloadBillReport = async (req, res) => {
         .split("T")[0]}.xlsx`;
 
         Util.exportToExcel(res, resultData, columns, sheetName, fileName);
+        return;
     } catch (error) {
         console.error(error);
         throw error;

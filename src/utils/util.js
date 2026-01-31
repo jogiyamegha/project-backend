@@ -219,8 +219,8 @@ const Util = class {
         const { startDate, endDate } = meta;
 
         const worksheet = xlsx.utils.json_to_sheet(
-        jsonData,
-        ...(Object.keys(meta).length > 0 ? [{ origin: "A4" }] : []),
+            jsonData,
+            Object.keys(meta).length > 0 ? { origin: "A4" } : {}
         );
 
         worksheet["!cols"] = columns;
@@ -269,7 +269,7 @@ const Util = class {
             `attachment; filename="${encodeURIComponent(fileName)}"`,
         );
 
-        res.end(buffer);
+        return res.send(buffer);
     }
 
     static populateMissingDates = (dataObject, startDate, endDate) => {

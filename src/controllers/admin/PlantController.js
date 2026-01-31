@@ -124,15 +124,19 @@ exports.downloadPlantReport = async (req, res) => {
                 "Electricity rate" : plant?.[TableFields.propertyAddress]?.[TableFields.electricityRate],
                 "Plant Status" : PlantStatusLabel(plant?.[TableFields.plantStatus]),
             })
-        }
-        const columns = [
+        } const columns = [
             { width: 25 }, 
             { width: 10 }, 
             { width: 20 }, 
             { width: 20 }, 
             { width: 15 }, 
             { width: 30 }, 
+            { width: 15 }, 
+            { width: 10 },
+            { width: 10 }, 
+            { width: 10 }, 
             { width: 25 }, 
+            { width: 15 }, 
             { width: 15 }, 
         ];
 
@@ -142,6 +146,10 @@ exports.downloadPlantReport = async (req, res) => {
         .split("T")[0]}.xlsx`;
 
         Util.exportToExcel(res, resultData, columns, sheetName, fileName);
+        console.log("shduhdudh");
+
+
+        return;
     } catch (error) {
         console.error(error);
         throw error;
