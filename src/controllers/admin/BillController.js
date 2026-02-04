@@ -41,6 +41,32 @@ exports.generateBill = async (req) => {
     return data;
 }
  
+exports.editBill = async (req) => {
+    const reqBody = req.body;
+    const billId = req.params[TableFields.ID];
+
+    const existingBill = await BillService.getUserById(billId).withBasicInfo().execute();
+    if (!existingBill) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+
+    if (existingBill && existingBill[TableFields.deleted]) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+
+    const response = await parseAndValidateBill(
+        reqBody, 
+        existingBill,
+        true,
+        async (updatedFields) => {
+            const record = await BillService.updateRecord(billId, updatedFields);
+            return record;
+        }
+    )
+
+    return response;
+}
+
 exports.listBills = async (req) => {
     return await BillService.listBills({
         ...req.query
@@ -174,7 +200,7 @@ async function parseAndValidateBill(
 
     const ppaId = reqBody[TableFields.ppaId];
 
-    if (isFieldEmpty(ppaId, existingBill[`${TableFields.ppaDetail}.${TableFields.ppaId}`])) {
+    if (isFieldEmpty(ppaId, existingBill?.[TableFields.ppaDetail]?.[TableFields.ppaId])) {
         throw new ValidationError(ValidationMsgs.PpaIdEmpty);
     }
     if (isFieldEmpty(reqBody[TableFields.billingMonth], existingBill[TableFields.billingMonth])) {
@@ -195,27 +221,37 @@ async function parseAndValidateBill(
 
     const ppaInfo = await PpaService.getUserById(ppaId).withBasicInfo().execute();
     const totalAmount = reqBody[TableFields.consumedUnits] * ppaInfo?.[TableFields.tarrif]
+
     try {
-        let response = await onValidationCompleted({
-            [TableFields.ppaDetail] : {
-                [TableFields.ppaId] : ppaId,
-                [TableFields.plantId]: ppaInfo?.[TableFields.plantId],
-                [TableFields.userId]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.userId],
-                [TableFields.ppaUniqueId]: ppaInfo?.[TableFields.ppaUniqueId],
-                [TableFields.ppaName]: ppaInfo?.[TableFields.ppaName],
-                [TableFields.plantUniqueId]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.plantUniqueId],
-                [TableFields.plantUniqueName]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.plantUniqueName],
-                [TableFields.tarrif]: ppaInfo?.[TableFields.tarrif],
-                [TableFields.plantCapacity]: ppaInfo?.[TableFields.plantCapacity],
-            },
-            [TableFields.billingMonth] : reqBody[TableFields.billingMonth],
-            [TableFields.billingYear] : reqBody[TableFields.billingYear],
-            [TableFields.generatedUnits] : reqBody[TableFields.generatedUnits],
-            [TableFields.consumedUnits] : reqBody[TableFields.consumedUnits],
-            [TableFields.exportedUnits] : reqBody[TableFields.exportedUnits],
-            [TableFields.totalAmount] : totalAmount || 0,
-        })
-        return response;
+        if (update === true) {
+            let updatedFields = {
+                [TableFields.generatedUnits] : reqBody[TableFields.generatedUnits] ?? existingBill[TableFields.generatedUnits],
+                [TableFields.consumedUnits] : reqBody[TableFields.consumedUnits] ?? existingBill[TableFields.consumedUnits],
+                [TableFields.exportedUnits] : reqBody[TableFields.exportedUnits] ?? existingBill[TableFields.exportedUnits],
+            }
+            return await onValidationCompleted(updatedFields);
+        } else {
+            let response = await onValidationCompleted({
+                [TableFields.ppaDetail] : {
+                    [TableFields.ppaId] : ppaId,
+                    [TableFields.plantId]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.plantId],
+                    [TableFields.userId]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.userId],
+                    [TableFields.ppaUniqueId]: ppaInfo?.[TableFields.ppaUniqueId],
+                    [TableFields.ppaName]: ppaInfo?.[TableFields.ppaName],
+                    [TableFields.plantUniqueId]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.plantUniqueId],
+                    [TableFields.plantUniqueName]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.plantUniqueName],
+                    [TableFields.tarrif]: ppaInfo?.[TableFields.tarrif],
+                    [TableFields.plantCapacity]: ppaInfo?.[TableFields.plantCapacity],
+                },
+                [TableFields.billingMonth] : reqBody[TableFields.billingMonth],
+                [TableFields.billingYear] : reqBody[TableFields.billingYear],
+                [TableFields.generatedUnits] : reqBody[TableFields.generatedUnits],
+                [TableFields.consumedUnits] : reqBody[TableFields.consumedUnits],
+                [TableFields.exportedUnits] : reqBody[TableFields.exportedUnits],
+                [TableFields.totalAmount] : totalAmount || 0,
+            })
+            return response;
+        }
     } catch (error) {
         throw error;
     }

@@ -111,27 +111,49 @@ class PpaService {
         );
     }
 
-
-    static updateRecord = async (recordId, updatedUserFields = {}) => {
-        if (await DiseaseService.existsWithName(updatedUserFields[TableFields.name_], recordId)) {
-            throw new ValidationError(ValidationMsgs.DiseaseExist);
-        }
-
-        let record = await Disease.findByIdAndUpdate(
+    static updateRecord = async (recordId, updatedFields = {}) => {
+        const record = await Ppa.findByIdAndUpdate(
             recordId,
             {
-                ...updatedUserFields,
-                [TableFields._updatedAt]: Date.now(),
+                $set: {
+                    ...updatedFields,
+                    [TableFields._updatedAt]: Date.now(),
+                },
             },
-            {
-                new: false,
-                projection: {[TableFields.ID]: 1},
-            }
+            { new: true }
         );
+
         if (!record) {
             throw new ValidationError(ValidationMsgs.RecordNotFound);
         }
+
+        return record;
     };
+
+    static updatePlantInfo = async (plantId, plantObj) => {
+        const { plantUniqueName } = plantObj
+        const { propertyName } = plantObj
+        const { propertyType } = plantObj
+        const { address } = plantObj
+        const { city } = plantObj
+        const { userId } = plantObj
+        const { name_ } = plantObj
+
+        await Ppa.updateMany(
+            {
+                [TableFields.plantDetail + '.' + TableFields.plantId] : MongoUtil.toObjectId(plantId)
+            },
+            {
+                [TableFields.plantDetail + '.' + TableFields.plantUniqueName] : plantUniqueName,
+                [TableFields.plantDetail + '.' + TableFields.propertyName] : propertyName,
+                [TableFields.plantDetail + '.' + TableFields.propertyType] : propertyType,
+                [TableFields.plantDetail + '.' + TableFields.address] : address,
+                [TableFields.plantDetail + '.' + TableFields.city] : city,
+                [TableFields.plantDetail + '.' + TableFields.userId] : userId,
+                [TableFields.plantDetail + '.' + TableFields.name_] : name_,
+            }
+        )
+    }
 
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {
         let records = undefined;

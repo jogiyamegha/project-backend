@@ -100,25 +100,23 @@ class BillService {
         });
     };
 
-    static updateRecord = async (recordId, updatedUserFields = {}) => {
-        if (await DiseaseService.existsWithName(updatedUserFields[TableFields.name_], recordId)) {
-            throw new ValidationError(ValidationMsgs.DiseaseExist);
-        }
-
-        let record = await Disease.findByIdAndUpdate(
+    static updateRecord = async (recordId, updatedFields = {}) => {
+        const record = await Bill.findByIdAndUpdate(
             recordId,
             {
-                ...updatedUserFields,
-                [TableFields._updatedAt]: Date.now(),
+                $set: {
+                    ...updatedFields,
+                    [TableFields._updatedAt]: Date.now(),
+                },
             },
-            {
-                new: false,
-                projection: {[TableFields.ID]: 1},
-            }
+            { new: true }
         );
+
         if (!record) {
             throw new ValidationError(ValidationMsgs.RecordNotFound);
         }
+
+        return record;
     };
 
     static updateBillStatus = async (recordId, updatedFields = {}) => {
@@ -141,6 +139,41 @@ class BillService {
                 [TableFields.userPaymentMethod] : UserPaymentMethod.Cash,
                 [TableFields.isPaid] : true,
                 [TableFields.paymentDate] : new Date(),
+            }
+        )
+    }
+
+    static updatePlantInfo = async (plantId, plantObj) => {
+        const { plantUniqueName } = plantObj
+        await Bill.updateMany(
+            {
+                [TableFields.ppaDetail + '.' + TableFields.plantId] : MongoUtil.toObjectId(plantId)
+            },
+            {
+                [TableFields.ppaDetail + '.' + TableFields.plantUniqueName] : plantUniqueName,
+            }
+        )
+    }
+
+    static updatePpaInfo = async (ppaId, ppaObj) => {
+        const { plantId } = ppaObj
+        const { plantUniqueId } = ppaObj
+        const { plantUniqueName } = ppaObj
+        const { ppaName } = ppaObj
+        const { tarrif } = ppaObj
+        const { plantCapacity } = ppaObj
+
+        await Bill.updateMany(
+            {
+                [TableFields.ppaDetail + '.' + TableFields.ppaId] : MongoUtil.toObjectId(ppaId)
+            },
+            {
+                [TableFields.ppaDetail + '.' + TableFields.plantId] : plantId,
+                [TableFields.ppaDetail + '.' + TableFields.plantUniqueId] : plantUniqueId,
+                [TableFields.ppaDetail + '.' + TableFields.plantUniqueName] : plantUniqueName,
+                [TableFields.ppaDetail + '.' + TableFields.ppaName] : ppaName,
+                [TableFields.ppaDetail + '.' + TableFields.tarrif] : tarrif,
+                [TableFields.ppaDetail + '.' + TableFields.plantCapacity] : plantCapacity,
             }
         )
     }

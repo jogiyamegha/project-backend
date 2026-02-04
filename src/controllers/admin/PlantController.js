@@ -1,23 +1,15 @@
 const PlantService = require("../../db/services/PlantService");
 const UserService = require('../../db/services/UserService');
 const ServiceManager = require("../../db/serviceManager");
-const {
-    TableFields,
-    ValidationMsgs,
-    UserTypes,
-    AuthTypes,
-    TableNames,
-    InterfaceTypes,
-    CounterSchemaType,
-    PropertyTypes,
-    PlantStatus,
-} = require("../../utils/constants");
+const { TableFields, ValidationMsgs, UserTypes, CounterSchemaType, PropertyTypes, PlantStatus } = require("../../utils/constants");
 const ValidationError = require("../../utils/ValidationError");
 const Email = require("../../emails/email");
 const {Folders} = require("../../utils/metadata");
 const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/storage");
 const CounterService = require("../../db/services/CounterService");
 const Util = require("../../utils/util");
+const PpaService = require("../../db/services/PpaService");
+const BillService = require("../../db/services/BillService");
 
 exports.addPlant = async (req) => {
     let reqBody = req.body;
@@ -26,11 +18,52 @@ exports.addPlant = async (req) => {
         reqBody, 
         undefined, 
         providedFiles, 
+        false,
         async (updatedUserFields) => {
             return await PlantService.insertRecord(updatedUserFields);
         }
     );
 };
+
+exports.editPlant = async (req) => {
+    let reqBody = req.body;
+    let providedFile = req.file || null;
+    const plantId = req.params[TableFields.ID];
+
+    const plant = await PlantService.getUserById(plantId).withBasicInfo().execute();
+    if (!plant) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+
+    if( plant && plant[TableFields.deleted]) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+
+    let plantObj = null;
+    const response = await parseAndValidatePlant(
+        reqBody, 
+        plant,
+        providedFile,
+        true,
+        async (updatedFields) => {
+            const record = await PlantService.updateRecord(plantId, updatedFields);
+            plantObj = {
+                [TableFields.plantUniqueName] : record[TableFields.plantUniqueName],
+                [TableFields.propertyName] : record[TableFields.propertyAddress]?.[TableFields.propertyName],
+                [TableFields.propertyType] : record[TableFields.propertyAddress]?.[TableFields.propertyType],
+                [TableFields.address] : record[TableFields.propertyAddress]?.[TableFields.address],
+                [TableFields.city] : record[TableFields.propertyAddress]?.[TableFields.city],
+                [TableFields.userId] : record[TableFields.userDetails]?.[TableFields.userId],
+                [TableFields.name_] : record[TableFields.userDetails]?.[TableFields.name_],
+            }
+            PpaService.updatePlantInfo(plantId, plantObj);
+            BillService.updatePlantInfo(plantId, plantObj);
+            return record;
+        }
+    )
+
+    return response;
+}
 
 exports.listPlants = async (req) => {
     let result = await PlantService.listPlants({
@@ -160,37 +193,41 @@ async function parseAndValidatePlant(
     reqBody,
     existingPlant = {},
     providedFile,
+    update = false,
     onValidationCompleted = async (updatedUserFields) => {}
 ) {
     const plantUniqueId = await CounterService.consumeSingleKey(CounterSchemaType.Plant);
-    //Text fields validations
-    if (isFieldEmpty(reqBody[TableFields.userId], existingPlant[TableFields.userId])) {
+
+    if (isFieldEmpty(reqBody[TableFields.userId], existingPlant?.[TableFields.userDetails]?.[TableFields.userId])) {
         throw new ValidationError(ValidationMsgs.UserIdEmpty);
     }
-    if (isFieldEmpty(reqBody[TableFields.propertyType], existingPlant[`${TableFields.propertyAddress}.${TableFields.propertyType}`])){
+    if (isFieldEmpty(reqBody[TableFields.propertyType], existingPlant?.[TableFields.propertyAddress]?.[TableFields.propertyType])){
         throw new ValidationError(ValidationMsgs.PropertyTypeEmpty);
     }
-    if (isFieldEmpty(reqBody[TableFields.address], existingPlant[`${TableFields.propertyAddress}.${TableFields.address}`])) {
+    if (isFieldEmpty(reqBody[TableFields.address], existingPlant?.[TableFields.propertyAddress]?.[TableFields.address])) {
         throw new ValidationError(ValidationMsgs.AddressEmpty);
     }
-    if (isFieldEmpty(reqBody[TableFields.state], existingPlant[`${TableFields.propertyAddress}.${TableFields.state}`])) {
+    if (isFieldEmpty(reqBody[TableFields.state], existingPlant?.[TableFields.propertyAddress]?.[TableFields.state])) {
         throw new ValidationError(ValidationMsgs.StateEmpty);
     }
-    if (isFieldEmpty(reqBody[TableFields.city], existingPlant[`${TableFields.propertyAddress}.${TableFields.city}`])) {
+    if (isFieldEmpty(reqBody[TableFields.city], existingPlant?.[TableFields.propertyAddress]?.[TableFields.city])) {
         throw new ValidationError(ValidationMsgs.CityEmpty);
     }
-    if (isFieldEmpty(reqBody[TableFields.pincode], existingPlant[`${TableFields.propertyAddress}.${TableFields.pincode}`])) {
+    if (isFieldEmpty(reqBody[TableFields.pincode], existingPlant?.[TableFields.propertyAddress]?.[TableFields.pincode])) {
         throw new ValidationError(ValidationMsgs.PincodeEmpty);
     }
-    if (isFieldEmpty(reqBody[TableFields.billAmount], existingPlant[`${TableFields.propertyAddress}.${TableFields.billAmount}`])) {
-        throw new ValidationError(ValidationMsgs.PincodeEmpty);
+    if (isFieldEmpty(reqBody[TableFields.billAmount], existingPlant?.[TableFields.propertyAddress]?.[TableFields.billAmount])) {
+        throw new ValidationError(ValidationMsgs.BillAmountEmpty);
     }
     
     const userInfo = await UserService.getUserById(reqBody[TableFields.userId]).withBasicInfo().execute();
     
     const existingImageKey = existingPlant[`${TableFields.propertyAddress}.${TableFields.billImage}`];
     let persistedImageKey = existingImageKey;
-    
+    console.log("shdushd",existingImageKey);
+    console.log("bdsjhdusdhudh",persistedImageKey);
+    console.log(providedFile);
+
     try {
         if (providedFile) {
             let newImageKey = await addFile(
@@ -200,27 +237,65 @@ async function parseAndValidatePlant(
                 true,
                 providedFile
             );
+            console.log(newImageKey);
             persistedImageKey = newImageKey;
         }
 
-        let response =await onValidationCompleted({
-            [TableFields.plantUniqueId] : plantUniqueId,
-            [`${TableFields.userDetails}.${TableFields.userId}`]: userInfo[TableFields.ID],
-            [`${TableFields.userDetails}.${TableFields.userType}`]: userInfo[TableFields.userType],
-            [`${TableFields.userDetails}.${TableFields.name_}`]: userInfo[TableFields.name_],
-            [`${TableFields.userDetails}.${TableFields.deleted}`]: userInfo[TableFields.deleted],
-            [`${TableFields.propertyAddress}.${TableFields.propertyName}`]: reqBody[TableFields.propertyName] || null,
-            [`${TableFields.propertyAddress}.${TableFields.propertyType}`]: reqBody[TableFields.propertyType],
-            [`${TableFields.propertyAddress}.${TableFields.address}`]: reqBody[TableFields.address],
-            [`${TableFields.propertyAddress}.${TableFields.city}`]: reqBody[TableFields.city],
-            [`${TableFields.propertyAddress}.${TableFields.state}`]: reqBody[TableFields.state],
-            [`${TableFields.propertyAddress}.${TableFields.pincode}`]: reqBody[TableFields.pincode],
-            [`${TableFields.propertyAddress}.${TableFields.roofArea}`]: reqBody[TableFields.roofArea],
-            [`${TableFields.propertyAddress}.${TableFields.billAmount}`]: reqBody[TableFields.billAmount],
-            [`${TableFields.propertyAddress}.${TableFields.billImage}`]: persistedImageKey,
-            [`${TableFields.propertyAddress}.${TableFields.electricityRate}`]: reqBody[TableFields.electricityRate] || 0,
-        });
-        return response;
+        if (update === true) {
+            let updatedFields = {};
+            if (reqBody[TableFields.userId]) {
+                const newUserInfo = await UserService.getUserById(reqBody[TableFields.userId]).withBasicInfo().execute();
+
+                if(newUserInfo == null) {
+                    throw new ValidationError(ValidationMsgs.RecordNotExists);
+                }
+
+                updatedFields[TableFields.userDetails] = {
+                    [TableFields.userId] : reqBody[TableFields.userId],
+                    [TableFields.name_] : newUserInfo[TableFields.name_],
+                    [TableFields.userType] : newUserInfo[TableFields.userType]
+                }
+            }
+
+            updatedFields = {
+                ...updatedFields,
+                [TableFields.plantUniqueName]: reqBody[TableFields.plantUniqueName] ?? existingPlant[TableFields.plantUniqueName],
+                [TableFields.propertyAddress]: {    
+                    [TableFields.propertyName]: reqBody[TableFields.propertyName] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.propertyName],
+                    [TableFields.propertyType]: reqBody[TableFields.propertyType] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.propertyType],
+                    [TableFields.address]: reqBody[TableFields.address] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.address],
+                    [TableFields.city]: reqBody[TableFields.city] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.city],
+                    [TableFields.state]: reqBody[TableFields.state] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.state],
+                    [TableFields.pincode]: reqBody[TableFields.pincode] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.pincode],
+                    [TableFields.roofArea]: reqBody[TableFields.roofArea] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.roofArea],
+                    [TableFields.billAmount]: reqBody[TableFields.billAmount] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.billAmount],
+                    [TableFields.billImage]: persistedImageKey ?? reqBody[TableFields.billImage] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.billImage],
+                    [TableFields.electricityRate]: reqBody[TableFields.electricityRate] ?? existingPlant[TableFields.propertyAddress]?.[TableFields.electricityRate],
+                },
+                // [TableFields.plantStatus]:  reqBody[TableFields.plantStatus] ?? existingPlant[TableFields.plantStatus],
+            }; 
+            return await onValidationCompleted(updatedFields);
+        } else {
+            let response = await onValidationCompleted({
+                [TableFields.plantUniqueId] : plantUniqueId,
+                [`${TableFields.userDetails}.${TableFields.userId}`]: userInfo[TableFields.ID],
+                [`${TableFields.userDetails}.${TableFields.userType}`]: userInfo[TableFields.userType],
+                [`${TableFields.userDetails}.${TableFields.name_}`]: userInfo[TableFields.name_],
+                [`${TableFields.userDetails}.${TableFields.deleted}`]: userInfo[TableFields.deleted],
+                [`${TableFields.propertyAddress}.${TableFields.propertyName}`]: reqBody[TableFields.propertyName] || null,
+                [`${TableFields.propertyAddress}.${TableFields.propertyType}`]: reqBody[TableFields.propertyType],
+                [`${TableFields.propertyAddress}.${TableFields.address}`]: reqBody[TableFields.address],
+                [`${TableFields.propertyAddress}.${TableFields.city}`]: reqBody[TableFields.city],
+                [`${TableFields.propertyAddress}.${TableFields.state}`]: reqBody[TableFields.state],
+                [`${TableFields.propertyAddress}.${TableFields.pincode}`]: reqBody[TableFields.pincode],
+                [`${TableFields.propertyAddress}.${TableFields.roofArea}`]: reqBody[TableFields.roofArea],
+                [`${TableFields.propertyAddress}.${TableFields.billAmount}`]: reqBody[TableFields.billAmount],
+                [`${TableFields.propertyAddress}.${TableFields.billImage}`]: persistedImageKey,
+                [`${TableFields.propertyAddress}.${TableFields.electricityRate}`]: reqBody[TableFields.electricityRate] || 0,
+            });
+    
+            return response;
+        }
     } catch (error) {
         throw error;
     }

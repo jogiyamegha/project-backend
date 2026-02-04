@@ -57,8 +57,6 @@ const router = API.configRoute("/admin")
 /**
  * -------------------------------------
  * Reports 
- * (cash payment, approved plants, rejected plants, submitted plants)
- * (bill, )
  * -------------------------------------
  */
 
@@ -95,6 +93,12 @@ const router = API.configRoute("/admin")
 .userMiddlewares(ImageHandler.single([TableFields.billImage]))
 .build()
 
+.addPath(`/plant/edit/:${TableFields.ID}`)
+.asUPDATE(PlantController.editPlant)
+.userMiddlewares(ImageHandler.single([TableFields.billImage]))
+.useAdminAuth()
+.build()
+
 .addPath('/plant/list')
 .asGET(PlantController.listPlants)
 .useAdminAuth()
@@ -122,6 +126,12 @@ const router = API.configRoute("/admin")
 .userMiddlewares(ImageHandler.multiplePDFAndImagesBasedOnType())
 .build()
 
+.addPath(`/ppa/edit/:${TableFields.ID}`)
+.asUPDATE(PpaController.editPpa)
+.userMiddlewares(ImageHandler.multiplePDFAndImagesBasedOnType())
+.useAdminAuth()
+.build()
+
 .addPath('/ppa/list')
 .asGET(PpaController.listPPa)
 .useAdminAuth()
@@ -145,6 +155,11 @@ const router = API.configRoute("/admin")
 
 .addPath('/bill/generate')
 .asPOST(BillController.generateBill)
+.useAdminAuth()
+.build()
+
+.addPath(`/bill/edit/:${TableFields.ID}`)
+.asUPDATE(BillController.editBill)
 .useAdminAuth()
 .build()
 

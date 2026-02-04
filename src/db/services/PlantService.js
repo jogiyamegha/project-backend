@@ -211,25 +211,23 @@ class PlantService {
         });
     };
 
-    static updateRecord = async (recordId, updatedUserFields = {}) => {
-        if (await DiseaseService.existsWithName(updatedUserFields[TableFields.name_], recordId)) {
-            throw new ValidationError(ValidationMsgs.DiseaseExist);
-        }
-
-        let record = await Disease.findByIdAndUpdate(
+    static updateRecord = async (recordId, updatedFields = {}) => {
+        const record = await Plant.findByIdAndUpdate(
             recordId,
             {
-                ...updatedUserFields,
-                [TableFields._updatedAt]: Date.now(),
+                $set: {
+                    ...updatedFields,
+                    [TableFields._updatedAt]: Date.now(),
+                },
             },
-            {
-                new: false,
-                projection: {[TableFields.ID]: 1},
-            }
+            { new: true }
         );
+
         if (!record) {
             throw new ValidationError(ValidationMsgs.RecordNotFound);
         }
+
+        return record;
     };
 
     static updatePlantStatus = async (plantId, plantStatus, user, plantUniqueName) => {
