@@ -81,6 +81,11 @@ const router = API.configRoute("/admin")
 .useAdminAuth()
 .build()
 
+.addPath(`/user/delete/:${TableFields.ID}`)
+.asDELETE(UserController.deleteUser)
+.useAdminAuth()
+.build()
+
 /**
  * -------------------------------------
  * Plant Routes
@@ -111,6 +116,11 @@ const router = API.configRoute("/admin")
 
 .addPath(`/plant/status/update/:${TableFields.ID}`)
 .asUPDATE(PlantController.updatePlantStatus)
+.useAdminAuth()
+.build()
+
+.addPath(`/plant/delete/:${TableFields.ID}`)
+.asDELETE(PlantController.deletePlant)
 .useAdminAuth()
 .build()
 
@@ -147,6 +157,11 @@ const router = API.configRoute("/admin")
 .useAdminAuth()
 .build()
 
+.addPath(`/ppa/delete/:${TableFields.ID}`)
+.asDELETE(PpaController.deletePpa)
+.useAdminAuth()
+.build()
+
 /**
  * -------------------------------------
  * Bill Routes
@@ -170,6 +185,11 @@ const router = API.configRoute("/admin")
 
 .addPath(`/bill/info/:${TableFields.ID}`)
 .asGET(BillController.billInfo)
+.useAdminAuth()
+.build()
+
+.addPath(`/bill/delete/:${TableFields.ID}`)
+.asDELETE(BillController.deleteBill)
 .useAdminAuth()
 .build()
 

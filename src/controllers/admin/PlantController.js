@@ -189,6 +189,16 @@ exports.downloadPlantReport = async (req, res) => {
     }
 }
 
+exports.deletePlant = async (req) => {
+    const plantId = req.params[TableFields.ID];
+    const plant = await PlantService.getUserById(plantId).withBasicInfo().execute();
+    if (!plant || plant[TableFields.deleted] == true) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+    await PlantService.updateDelete(plantId);
+    await PpaService.updatePlantDeleted(plantId);
+}
+
 async function parseAndValidatePlant(
     reqBody,
     existingPlant = {},

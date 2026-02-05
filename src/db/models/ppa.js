@@ -87,6 +87,10 @@ const ppaSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        [TableFields.plantDeleted] : {
+            type: Boolean,
+            default: false,
+        },
         [TableFields._createdAt]: {
             type: Date,
             default: Date.now()

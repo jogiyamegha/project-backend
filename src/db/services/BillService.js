@@ -178,6 +178,34 @@ class BillService {
         )
     }
 
+    static updatePpaDeleted = async (ppaId) => {
+        return await Bill.updateMany(
+            {
+                [`${TableFields.ppaDetail}.${TableFields.ppaId}`]: MongoUtil.toObjectId(ppaId)
+            },
+            {
+                $set: {
+                    [TableFields.ppaDeleted]: true
+                }
+            }
+        )
+    }
+
+    static updateDelete = async (billId) => {
+        return await Bill.updateOne(
+            {
+                [TableFields.ID] : MongoUtil.toObjectId(billId)
+            },
+            {
+                $set: {
+                    [TableFields.deleted]: true,
+                    [TableFields._deletedAt]: new Date()
+                }
+            }
+        )
+    }
+
+
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {
         let records = undefined;
         switch (tableName) {

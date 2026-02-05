@@ -128,6 +128,10 @@ const plantSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        [TableFields.userDeleted] : {
+            type: Boolean,
+            default: false,
+        },
         [TableFields._createdAt]: {
             type: Date,
             default: Date.now()

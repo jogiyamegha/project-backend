@@ -293,6 +293,33 @@ class PlantService {
         );
     };
 
+    static updateUserDelete = async (userId) => {
+        return await Plant.updateMany(
+            {
+                [`${TableFields.userDetails}.${TableFields.userId}`]: MongoUtil.toObjectId(userId)
+            },
+            {
+                $set: {
+                    [TableFields.userDeleted]: true
+                }
+            }
+        )
+    }
+
+    static updateDelete = async (plantId) => {
+        return await Plant.updateOne(
+            {
+                [TableFields.ID] : MongoUtil.toObjectId(plantId)
+            },
+            {
+                $set: {
+                    [TableFields.deleted]: true,
+                    [TableFields._deletedAt]: new Date()
+                }
+            }
+        )
+    }
+
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {
         let records = undefined;
         // console.log(cascadeDeleteMethodReference, tableName, ...referenceId);

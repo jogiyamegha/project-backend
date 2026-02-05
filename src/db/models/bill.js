@@ -97,6 +97,10 @@ const billSchema = new mongoose.Schema(
         [TableFields.deleted] : {
             type: Boolean,
             default: false,
+        }, 
+        [TableFields.ppaDeleted] : {
+            type: Boolean,
+            default: false,
         },
         [TableFields._createdAt]: {
             type: Date,

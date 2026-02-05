@@ -155,6 +155,33 @@ class PpaService {
         )
     }
 
+    static updatePlantDeleted = async (plantId) => {
+        return await Ppa.updateMany(
+            {
+                [`${TableFields.plantDetail}.${TableFields.plantId}`]: MongoUtil.toObjectId(plantId)
+            },
+            {
+                $set: {
+                    [TableFields.plantDeleted]: true
+                }
+            }
+        )
+    }
+
+    static updateDelete = async (ppaId) => {
+        return await Ppa.updateOne(
+            {
+                [TableFields.ID] : MongoUtil.toObjectId(ppaId)
+            },
+            {
+                $set: {
+                    [TableFields.deleted]: true,
+                    [TableFields._deletedAt]: new Date()
+                }
+            }
+        )
+    }
+
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {
         let records = undefined;
         // console.log(cascadeDeleteMethodReference, tableName, ...referenceId);

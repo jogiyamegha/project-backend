@@ -115,6 +115,16 @@ exports.signPpa = async (req) => {
     return await PpaService.updateSign(ppaId);
 }
 
+exports.deletePpa = async (req) => {
+    const ppaId = req.params[TableFields.ID];
+    const ppa = await PpaService.getUserById(ppaId).withBasicInfo().execute();
+    if (!ppa || ppa[TableFields.deleted] == true) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+    await PpaService.updateDelete(ppaId);
+    await BillService.updatePpaDeleted(ppaId);
+}
+
 async function parseAndValidatePpa(
     reqBody,
     existingPpa = {},

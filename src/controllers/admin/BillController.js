@@ -4,7 +4,6 @@ const { TableFields, ValidationMsgs, TableNames, UserTypes, UserPaymentMethod, M
 const ValidationError = require('../../utils/ValidationError');
 const Util = require('../../utils/util');
 const PpaService = require('../../db/services/PpaService');
-const { plantInfo } = require('./PlantController');
 
 exports.generateBill = async (req) => {
     const reqBody = req.body;
@@ -189,6 +188,15 @@ exports.downloadBillReport = async (req, res) => {
         console.error(error);
         throw error;
     }
+}
+
+exports.deleteBill = async (req) => {
+    const billId = req.params[TableFields.ID];
+    const bill = await BillService.getUserById(billId).withBasicInfo().execute();
+    if (!bill || bill[TableFields.deleted] == true) {
+        throw new ValidationError(ValidationMsgs.RecordNotExists);
+    }
+    await BillService.updateDelete(billId);
 }
 
 async function parseAndValidateBill(

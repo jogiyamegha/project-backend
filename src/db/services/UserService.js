@@ -231,6 +231,20 @@ class UserService {
         await userObj.save();
     };
 
+    static updateDelete = async (userId) => {
+        return await User.updateOne(
+            {
+                [TableFields.ID]: MongoUtil.toObjectId(userId)
+            },
+            {
+                $set: {
+                    [TableFields.deleted]: true,
+                    [TableFields._deletedAt]: new Date()
+                }
+            }
+        )
+    }
+
     static deleteMyReferences = async (tableName, deleteRecordIds) => {
         let recordsList = [];
         let projection = {[TableFields.ID]: 1};
