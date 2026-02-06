@@ -1,13 +1,13 @@
-const {TableFields, ValidationMsgs, UserTypes, TableNames} = require("../../utils/constants");
+const { TableFields, ValidationMsgs, UserTypes, TableNames } = require("../../utils/constants");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
-const {MongoUtil} = require('../../db/mongoose');
+const { MongoUtil } = require('../../db/mongoose');
 const User = require("../models/user");
 
 class UserService {
     static findByEmail = (email) => {
         return new ProjectionBuilder(async function () {
-            return await User.findOne({email}, this);
+            return await User.findOne({ email }, this);
         });
     };
 
@@ -18,7 +18,7 @@ class UserService {
             },
             {
                 $push: {
-                    [TableFields.tokens]: {[TableFields.token]: token},
+                    [TableFields.tokens]: { [TableFields.token]: token },
                 },
             }
         );
@@ -26,7 +26,7 @@ class UserService {
 
     static getUserById = (userId) => {
         return new ProjectionBuilder(async function () {
-            return await User.findOne({[TableFields.ID]: userId}, this);
+            return await User.findOne({ [TableFields.ID]: userId }, this);
         });
     };
 
@@ -35,8 +35,8 @@ class UserService {
             [TableFields.email]: email,
             ...(exceptionId
                 ? {
-                      [TableFields.ID]: {$ne: exceptionId},
-                  }
+                    [TableFields.ID]: { $ne: exceptionId },
+                }
                 : {}),
         });
     };
@@ -53,7 +53,11 @@ class UserService {
         if (await UserService.existsWithEmail(email)) throw new ValidationError(ValidationMsgs.DuplicateEmail);
 
         const user = new User(reqBody);
-        user[TableFields.userType] = UserTypes.Investor;
+        // Set userType from reqBody if present, otherwise default to Investor
+        if (!reqBody[TableFields.userType]) {
+            user[TableFields.userType] = UserTypes.Investor;
+        }
+
         if (!user.isValidPassword(password)) {
             throw new ValidationError(ValidationMsgs.PasswordInvalid);
         }
@@ -71,7 +75,7 @@ class UserService {
 
     static getUserByEmail = (email) => {
         return new ProjectionBuilder(async function () {
-            return await User.findOne({[TableFields.email]: email}, this);
+            return await User.findOne({ [TableFields.email]: email }, this);
         });
     };
 
@@ -100,25 +104,25 @@ class UserService {
             if (searchTerm) {
                 searchQuery = {
                     $or: [
-                            {
-                                [TableFields.name_]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
+                        {
+                            [TableFields.name_]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
                             },
-                            {
-                                [TableFields.email]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
+                        },
+                        {
+                            [TableFields.email]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
                             },
-                        ],
+                        },
+                    ],
                 };
             }
             if (filter.userType) {
                 searchQuery[TableFields.userType] = filter.userType;
             }
-            
+
             if (filter.isActive) {
                 searchQuery[TableFields.isActive] = filter.isActive;
             }
@@ -128,8 +132,8 @@ class UserService {
                 User.find(searchQuery, this)
                     .limit(parseInt(limit))
                     .skip(parseInt(skip))
-                    .sort({[sortKey]: parseInt(sortOrder)}),
-            ]).then(([total, records]) => ({total, records}));
+                    .sort({ [sortKey]: parseInt(sortOrder) }),
+            ]).then(([total, records]) => ({ total, records }));
         });
     };
 
@@ -140,7 +144,7 @@ class UserService {
             },
             {
                 $pull: {
-                    [TableFields.tokens]: {[TableFields.token]: authToken},
+                    [TableFields.tokens]: { [TableFields.token]: authToken },
                 },
             }
         );
@@ -155,8 +159,8 @@ class UserService {
             recordId,
             {
                 $set: {
-                ...updatedUserFields,
-                [TableFields._updatedAt]: new Date()
+                    ...updatedUserFields,
+                    [TableFields._updatedAt]: new Date()
                 }
             },
             {
@@ -226,7 +230,7 @@ class UserService {
     };
 
     static updatePasswordAndInsertLatestToken = async (userObj, newPassword, token) => {
-        userObj[TableFields.tokens] = [{[TableFields.token]: token}];
+        userObj[TableFields.tokens] = [{ [TableFields.token]: token }];
         userObj[TableFields.password] = newPassword; // It will be hashed by Schema methods (pre hook 'save')
         await userObj.save();
     };
@@ -247,13 +251,13 @@ class UserService {
 
     static deleteMyReferences = async (tableName, deleteRecordIds) => {
         let recordsList = [];
-        let projection = {[TableFields.ID]: 1};
+        let projection = { [TableFields.ID]: 1 };
 
         switch (tableName) {
             case TableNames.User:
                 recordsList = await User.find(
                     {
-                        [TableFields.ID]: {$in: deleteRecordIds},
+                        [TableFields.ID]: { $in: deleteRecordIds },
                     },
                     projection
                 );
@@ -269,7 +273,7 @@ class UserService {
             });
 
             await User.deleteMany({
-                [TableFields.ID]: {$in: ids},
+                [TableFields.ID]: { $in: ids },
             });
         }
     };

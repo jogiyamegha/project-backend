@@ -1,5 +1,5 @@
 const UserTypes = (function () {
-    function UserTypes() {}
+    function UserTypes() { }
     UserTypes.Admin = 1;
     UserTypes.Investor = 2;
     UserTypes.Consumer = 3;
@@ -7,14 +7,14 @@ const UserTypes = (function () {
 })();
 
 const PropertyTypes = (function () {
-    function PropertyTypes() {};
+    function PropertyTypes() { };
     PropertyTypes.HousingSociety = 1;
     PropertyTypes.ManufacturingUnit = 2;
     return PropertyTypes;
 })();
 
 const PlantStatus = (function () {
-    function PlantStatus() {};
+    function PlantStatus() { };
     PlantStatus.Submitted = 1;
     PlantStatus.Approved = 2;
     PlantStatus.Rejected = 3;
@@ -23,7 +23,7 @@ const PlantStatus = (function () {
 })();
 
 const TransactionType = (function () {
-    function TransactionType() {};
+    function TransactionType() { };
     TransactionType.BillPayment = 1;
     TransactionType.Return = 2;
     TransactionType.InvestoerReturn = 3;
@@ -32,15 +32,15 @@ const TransactionType = (function () {
 })();
 
 const PaymentTypes = (function () {
-    function PaymentTypes() {}
+    function PaymentTypes() { }
     PaymentTypes.ConsumerPayment = 1;
     PaymentTypes.InvestorPayment = 2;
 
     return PaymentTypes;
 })();
 
-const UserPaymentMethod = (function (){
-    function UserPaymentMethod() {};
+const UserPaymentMethod = (function () {
+    function UserPaymentMethod() { };
     UserPaymentMethod.Cash = 1;
     UserPaymentMethod.Online = 2;
 
@@ -48,7 +48,7 @@ const UserPaymentMethod = (function (){
 })();
 
 const PaymentStatusTypes = (function () {
-    function PaymentStatusTypes() {}
+    function PaymentStatusTypes() { }
     PaymentStatusTypes.Pending = 1;
     PaymentStatusTypes.Processing = 2;
     PaymentStatusTypes.Completed = 3;
@@ -60,7 +60,7 @@ const PaymentStatusTypes = (function () {
 })();
 
 const TransactionStatus = (function () {
-    function TransactionStatus() {};
+    function TransactionStatus() { };
     TransactionStatus.Pending = 1;
     TransactionStatus.Succssful = 2;
     TransactionStatus.Failed = 3;
@@ -70,7 +70,7 @@ const TransactionStatus = (function () {
 })();
 
 const PayoutStatusTypes = (function () {
-    function PayoutStatusTypes() {}
+    function PayoutStatusTypes() { }
     PayoutStatusTypes.Pending = 1;
     PayoutStatusTypes.Processing = 2;
     PayoutStatusTypes.Completed = 3;
@@ -81,7 +81,7 @@ const PayoutStatusTypes = (function () {
 })();
 
 const Months = (function Months() {
-    function Months() {};
+    function Months() { };
     Months.January = 1;
     Months.February = 2;
     Months.March = 3;
@@ -94,12 +94,12 @@ const Months = (function Months() {
     Months.October = 10;
     Months.November = 11;
     Months.December = 12;
-    
+
     return Months;
 })()
 
 const CmsTypes = (function () {
-    function CmsTypes() {}
+    function CmsTypes() { }
     CmsTypes.Aboutus = 1;
     CmsTypes.PrivacyPolicy = 2;
     CmsTypes.TermsConditions = 3;
@@ -108,7 +108,7 @@ const CmsTypes = (function () {
 })();
 
 const RequiredFields = (function () {
-    function RequiredFields() {}
+    function RequiredFields() { }
     RequiredFields.degreeClass = "Degree Class";
     RequiredFields.grade = "Grade";
     RequiredFields.overallGrade = "OverallGrade";
@@ -129,7 +129,7 @@ const RequiredFields = (function () {
 })();
 
 const Platforms = (function () {
-    function Platforms() {}
+    function Platforms() { }
     Platforms.Admin = 1;
     Platforms.Investor = 2;
     Platforms.Farmer = 3;
@@ -139,14 +139,14 @@ const Platforms = (function () {
 })();
 
 const FCMPlatformType = (function () {
-    function type() {}
+    function type() { }
     type.Android = 1;
     type.iOS = 2;
     return type;
 })();
 
 const InterfaceTypes = (function () {
-    function InterfaceType() {}
+    function InterfaceType() { }
     InterfaceType.Admin = {
         AdminWeb: "i1",
     };
@@ -160,7 +160,7 @@ const InterfaceTypes = (function () {
 })();
 
 const ValidationMsgs = (function () {
-    function ValidationMsgs() {}
+    function ValidationMsgs() { }
     ValidationMsgs.InvalidAuthToken = "Invalid auth token.";
     ValidationMsgs.ParametersError = "Invalid parameters.";
     ValidationMsgs.RecordNotFound = "Record not found!";
@@ -207,7 +207,7 @@ const ValidationMsgs = (function () {
     ValidationMsgs.PropertyTypeEmpty = 'Property Type required';
     ValidationMsgs.AddressEmpty = 'Address required';
     ValidationMsgs.CityEmpty = 'City required';
-    ValidationMsgs.StateEmpty= 'State required';
+    ValidationMsgs.StateEmpty = 'State required';
     ValidationMsgs.PincodeEmpty = 'Pincode required';
     ValidationMsgs.PpaNameEmpty = 'Ppa Name required';
     ValidationMsgs.BillImageEmpty = 'Bill required';
@@ -237,7 +237,7 @@ const ValidationMsgs = (function () {
 })();
 
 const ResponseMessages = (function () {
-    function ResponseMessages() {}
+    function ResponseMessages() { }
     ResponseMessages.Ok = "Ok";
     ResponseMessages.NotFound = "Data not found!";
     ResponseMessages.signInSuccess = "Sign In successfully!";
@@ -246,7 +246,7 @@ const ResponseMessages = (function () {
 })();
 
 const GeneralMessages = (function () {
-    function GeneralMessages() {}
+    function GeneralMessages() { }
     GeneralMessages.forgotPasswordEmailSubject = "Reset your password";
     GeneralMessages.invitationEmailSubject = "Your OnWard Education Account is Ready!";
     GeneralMessages.PlantInfo = "Plant Added";
@@ -254,7 +254,7 @@ const GeneralMessages = (function () {
 })();
 
 const TableNames = (function () {
-    function TableNames() {}
+    function TableNames() { }
     TableNames.Admin = "admins";
     TableNames.Bill = 'bills';
     TableNames.Cms = "cms";
@@ -272,7 +272,7 @@ const TableNames = (function () {
 })();
 
 const AuthTypes = (function () {
-    function types() {}
+    function types() { }
     types.Admin = 1;
     types.Investor = 2;
     types.Consumer = 3;
@@ -280,7 +280,7 @@ const AuthTypes = (function () {
 })();
 
 const InquiryTypes = (function () {
-    function types() {}
+    function types() { }
     types.investor = "investor";
     types.farmer = "farmer";
     types.investorGuest = "investorGuest";
@@ -289,14 +289,14 @@ const InquiryTypes = (function () {
 })();
 
 const CounterSchemaType = (function () {
-    function types() {}
+    function types() { }
     types.Plant = "ct1"; //ct=counter type
     types.Ppa = "ct2"; //ct=counter type
     return types;
 })();
 
 const TableFields = (function () {
-    function TableFields() {}
+    function TableFields() { }
     TableFields.ID = "_id";
     TableFields.userId = "userId";
     TableFields.name_ = "name";
@@ -318,6 +318,7 @@ const TableFields = (function () {
     TableFields.plantDeleted = "plantDeleted";
     TableFields.ppaDeleted = "ppaDeleted";
     TableFields.ppaDetail = 'ppaDetail';
+    TableFields.profilePicture = 'profilePicture';
     TableFields.ppaUniqueId = 'ppaUniqueId';
     TableFields.ppaName = 'ppaName';
     TableFields.ppaId = 'ppaId';
@@ -390,7 +391,7 @@ const TableFields = (function () {
     TableFields.fromUserDetail = 'fromUserDetail';
     TableFields.walletId = 'walletId';
     TableFields.toUserDetail = 'toUserDetail';
-    TableFields.transactionType= 'transactionType';
+    TableFields.transactionType = 'transactionType';
     TableFields.transactionAmount = 'transactionAmount';
     TableFields.transactionId = 'transactionId';
     TableFields.transactionStatus = 'transactionStatus';
@@ -433,7 +434,7 @@ const TableFields = (function () {
 })();
 
 const ResponseStatus = (function () {
-    function ResponseStatus() {}
+    function ResponseStatus() { }
     ResponseStatus.Failed = 0;
     ResponseStatus.Success = 200;
     ResponseStatus.BadRequest = 400;
@@ -446,14 +447,14 @@ const ResponseStatus = (function () {
     return ResponseStatus;
 })();
 const DefaultConfigTypes = (function () {
-    function types() {}
+    function types() { }
     types.studentAppSettings = "appSettings"; //default configuration type
     types.defaultCaseQuestions = "defaultQuestions";
     return types;
 })();
 
 const ApiResponseCode = (function () {
-    function ApiResponseCode() {}
+    function ApiResponseCode() { }
     ApiResponseCode.ClientOrServerError = 400;
     ApiResponseCode.ResponseSuccess = 200;
     ApiResponseCode.AuthError = 401;
@@ -463,7 +464,7 @@ const ApiResponseCode = (function () {
 })();
 
 const ResponseFields = (function () {
-    function ResponseFields() {}
+    function ResponseFields() { }
     ResponseFields.status = "status";
     ResponseFields.message = "message";
     ResponseFields.result = "result";

@@ -1,5 +1,5 @@
 const API = require("../utils/apiBuilder");
-const {TableFields} = require("../utils/constants");
+const { TableFields } = require("../utils/constants");
 const AuthController = require("../controllers/admin/AuthController");
 const PlantController = require('../controllers/admin/PlantController');
 const PpaController = require('../controllers/admin/PpaController');
@@ -8,202 +8,214 @@ const UserController = require("../controllers/admin/UserController");
 const ImageHandler = require("../middleware/imageVerifier");
 
 const router = API.configRoute("/admin")
-/**
- * -------------------------------------
- * Auth Routes
- * -------------------------------------
- */
-.addPath("/signup")
-.asPOST(AuthController.addAdminUser)
-.build()
+    /**
+     * -------------------------------------
+     * Auth Routes
+     * -------------------------------------
+     */
+    .addPath("/signup")
+    .asPOST(AuthController.addAdminUser)
+    .build()
 
-.addPath("/login")
-.asPOST(AuthController.login)
-.build()
+    .addPath("/login")
+    .asPOST(AuthController.login)
+    .build()
 
-.addPath("/logout")
-.asPOST(AuthController.logout)
-.useAdminAuth()
-.build()
+    .addPath("/logout")
+    .asPOST(AuthController.logout)
+    .useAdminAuth()
+    .build()
 
-.addPath("/password/forgot")
-.asPOST(AuthController.forgotPassword)
-.build()
+    .addPath("/password/forgot")
+    .asPOST(AuthController.forgotPassword)
+    .build()
 
-.addPath("/verify/otp")
-.asPOST(AuthController.forgotPasswordCodeExists)
-.build()
+    .addPath("/verify/otp")
+    .asPOST(AuthController.forgotPasswordCodeExists)
+    .build()
 
-.addPath("/password/reset")
-.asPOST(AuthController.resetPassword)
-.build()
+    .addPath("/password/reset")
+    .asPOST(AuthController.resetPassword)
+    .build()
 
-.addPath("/password/change")
-.asUPDATE(AuthController.changePassword)
-.useAdminAuth()
-.build()
+    .addPath("/password/change")
+    .asUPDATE(AuthController.changePassword)
+    .useAdminAuth()
+    .build()
 
-/**
- * -------------------------------------
- * Dashboard Routes
- * -------------------------------------
- */
+    /**
+     * -------------------------------------
+     * Dashboard Routes
+     * -------------------------------------
+     */
 
-.addPath('/dashboard')
-.asGET(AuthController.getDashboardData)
-.useAdminAuth()
-.build()
+    .addPath('/dashboard')
+    .asGET(AuthController.getDashboardData)
+    .useAdminAuth()
+    .build()
 
-/**
- * -------------------------------------
- * Reports 
- * -------------------------------------
- */
+    /**
+     * -------------------------------------
+     * Reports 
+     * -------------------------------------
+     */
 
-.addPath('/plant/report/download')
-.asGET(PlantController.downloadPlantReport)
-.useAdminAuth()
-.build()
+    .addPath('/plant/report/download')
+    .asGET(PlantController.downloadPlantReport)
+    .useAdminAuth()
+    .build()
 
-.addPath('/bill/report/download')
-.asGET(BillController.downloadBillReport)
-.useAdminAuth()
-.build()
+    .addPath('/bill/report/download')
+    .asGET(BillController.downloadBillReport)
+    .useAdminAuth()
+    .build()
 
-/**
- * -------------------------------------
- * User Routes
- * -------------------------------------
- */
+    /**
+     * -------------------------------------
+     * User Routes
+     * -------------------------------------
+     */
 
-.addPath('/user/list')
-.asGET(UserController.getAllUsers)
-.useAdminAuth()
-.build()
+    .addPath('/user/list')
+    .asGET(UserController.getAllUsers)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/user/delete/:${TableFields.ID}`)
-.asDELETE(UserController.deleteUser)
-.useAdminAuth()
-.build()
+    .addPath('/user/add')
+    .asPOST(UserController.addUser)
+    .userMiddlewares(ImageHandler.single([TableFields.profilePicture]))
+    .useAdminAuth()
+    .build()
 
-/**
- * -------------------------------------
- * Plant Routes
- * -------------------------------------
- */
+    .addPath(`/user/edit/:${TableFields.ID}`)
+    .asUPDATE(UserController.editUser)
+    .userMiddlewares(ImageHandler.single([TableFields.profilePicture]))
+    .useAdminAuth()
+    .build()
 
-.addPath('/plant/add')
-.asPOST(PlantController.addPlant)
-.useAdminAuth()
-.userMiddlewares(ImageHandler.single([TableFields.billImage]))
-.build()
+    .addPath(`/user/delete/:${TableFields.ID}`)
+    .asDELETE(UserController.deleteUser)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/plant/edit/:${TableFields.ID}`)
-.asUPDATE(PlantController.editPlant)
-.userMiddlewares(ImageHandler.single([TableFields.billImage]))
-.useAdminAuth()
-.build()
+    /**
+     * -------------------------------------
+     * Plant Routes
+     * -------------------------------------
+     */
 
-.addPath('/plant/list')
-.asGET(PlantController.listPlants)
-.useAdminAuth()
-.build()
+    .addPath('/plant/add')
+    .asPOST(PlantController.addPlant)
+    .useAdminAuth()
+    .userMiddlewares(ImageHandler.single([TableFields.billImage]))
+    .build()
 
-.addPath(`/plant/info/:${TableFields.ID}`)
-.asGET(PlantController.plantInfo)
-.useAdminAuth()
-.build()
+    .addPath(`/plant/edit/:${TableFields.ID}`)
+    .asUPDATE(PlantController.editPlant)
+    .userMiddlewares(ImageHandler.single([TableFields.billImage]))
+    .useAdminAuth()
+    .build()
 
-.addPath(`/plant/status/update/:${TableFields.ID}`)
-.asUPDATE(PlantController.updatePlantStatus)
-.useAdminAuth()
-.build()
+    .addPath('/plant/list')
+    .asGET(PlantController.listPlants)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/plant/delete/:${TableFields.ID}`)
-.asDELETE(PlantController.deletePlant)
-.useAdminAuth()
-.build()
+    .addPath(`/plant/info/:${TableFields.ID}`)
+    .asGET(PlantController.plantInfo)
+    .useAdminAuth()
+    .build()
 
-/**
- * -------------------------------------
- * Ppa Routes
- * -------------------------------------
- */
+    .addPath(`/plant/status/update/:${TableFields.ID}`)
+    .asUPDATE(PlantController.updatePlantStatus)
+    .useAdminAuth()
+    .build()
 
-.addPath('/ppa/create')
-.asPOST(PpaController.createPpa)
-.useAdminAuth()
-.userMiddlewares(ImageHandler.multiplePDFAndImagesBasedOnType())
-.build()
+    .addPath(`/plant/delete/:${TableFields.ID}`)
+    .asDELETE(PlantController.deletePlant)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/ppa/edit/:${TableFields.ID}`)
-.asUPDATE(PpaController.editPpa)
-.userMiddlewares(ImageHandler.multiplePDFAndImagesBasedOnType())
-.useAdminAuth()
-.build()
+    /**
+     * -------------------------------------
+     * Ppa Routes
+     * -------------------------------------
+     */
 
-.addPath('/ppa/list')
-.asGET(PpaController.listPPa)
-.useAdminAuth()
-.build()
+    .addPath('/ppa/create')
+    .asPOST(PpaController.createPpa)
+    .useAdminAuth()
+    .userMiddlewares(ImageHandler.multiplePDFAndImagesBasedOnType())
+    .build()
 
-.addPath(`/ppa/info/:${TableFields.ID}`)
-.asGET(PpaController.ppaInfo)
-.useAdminAuth()
-.build()
+    .addPath(`/ppa/edit/:${TableFields.ID}`)
+    .asUPDATE(PpaController.editPpa)
+    .userMiddlewares(ImageHandler.multiplePDFAndImagesBasedOnType())
+    .useAdminAuth()
+    .build()
 
-.addPath(`/ppa/sign/:${TableFields.ID}`)
-.asUPDATE(PpaController.signPpa)
-.useAdminAuth()
-.build()
+    .addPath('/ppa/list')
+    .asGET(PpaController.listPPa)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/ppa/delete/:${TableFields.ID}`)
-.asDELETE(PpaController.deletePpa)
-.useAdminAuth()
-.build()
+    .addPath(`/ppa/info/:${TableFields.ID}`)
+    .asGET(PpaController.ppaInfo)
+    .useAdminAuth()
+    .build()
 
-/**
- * -------------------------------------
- * Bill Routes
- * -------------------------------------
- */
+    .addPath(`/ppa/sign/:${TableFields.ID}`)
+    .asUPDATE(PpaController.signPpa)
+    .useAdminAuth()
+    .build()
 
-.addPath('/bill/generate')
-.asPOST(BillController.generateBill)
-.useAdminAuth()
-.build()
+    .addPath(`/ppa/delete/:${TableFields.ID}`)
+    .asDELETE(PpaController.deletePpa)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/bill/edit/:${TableFields.ID}`)
-.asUPDATE(BillController.editBill)
-.useAdminAuth()
-.build()
+    /**
+     * -------------------------------------
+     * Bill Routes
+     * -------------------------------------
+     */
 
-.addPath('/bill/list')
-.asGET(BillController.listBills)
-.useAdminAuth()
-.build()
+    .addPath('/bill/generate')
+    .asPOST(BillController.generateBill)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/bill/info/:${TableFields.ID}`)
-.asGET(BillController.billInfo)
-.useAdminAuth()
-.build()
+    .addPath(`/bill/edit/:${TableFields.ID}`)
+    .asUPDATE(BillController.editBill)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/bill/delete/:${TableFields.ID}`)
-.asDELETE(BillController.deleteBill)
-.useAdminAuth()
-.build()
+    .addPath('/bill/list')
+    .asGET(BillController.listBills)
+    .useAdminAuth()
+    .build()
 
-/**
- * -------------------------------------
- * Payment Routes
- * -------------------------------------
- */
+    .addPath(`/bill/info/:${TableFields.ID}`)
+    .asGET(BillController.billInfo)
+    .useAdminAuth()
+    .build()
 
-.addPath(`/update/cash-payment/:${TableFields.ID}`)
-.asUPDATE(BillController.updateCashPayment)
-.useAdminAuth()
-.build()
+    .addPath(`/bill/delete/:${TableFields.ID}`)
+    .asDELETE(BillController.deleteBill)
+    .useAdminAuth()
+    .build()
 
-.getRouter();
+    /**
+     * -------------------------------------
+     * Payment Routes
+     * -------------------------------------
+     */
+
+    .addPath(`/update/cash-payment/:${TableFields.ID}`)
+    .asUPDATE(BillController.updateCashPayment)
+    .useAdminAuth()
+    .build()
+
+    .getRouter();
 
 module.exports = router;

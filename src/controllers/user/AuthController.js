@@ -1,8 +1,8 @@
 const UserService = require("../../db/services/UserService");
-const {InterfaceTypes, TableFields, ValidationMsgs} = require("../../utils/constants");
+const AdminService = require("../../db/services/AdminService");
+const { InterfaceTypes, TableFields, ValidationMsgs } = require("../../utils/constants");
 const ValidationError = require("../../utils/ValidationError")
 const Email = require("../../emails/email");
-
 
 exports.signUp = async (req) => {
     await UserService.insertUserRecord(req.body);
@@ -11,10 +11,10 @@ exports.signUp = async (req) => {
     email = (email + "").trim().toLowerCase();
     let user = await UserService.findByEmail(email).withPassword().withUserType().withBasicInfo().execute();
 
-    const token = user.createAuthToken(InterfaceTypes.Consumer.ConsumerApp); 
+    const token = user.createAuthToken(InterfaceTypes.Consumer.ConsumerApp);
     await UserService.saveAuthToken(user[TableFields.ID], token);
 
-    return {user, token};
+    return { user, token };
 };
 
 exports.login = async (req) => {
@@ -25,12 +25,23 @@ exports.login = async (req) => {
     const password = req.body[TableFields.password];
     if (!password) throw new ValidationError(ValidationMsgs.PasswordEmpty);
 
-    let user = await UserService .findByEmail(email).withPassword().withUserType().withBasicInfo().execute();
+    // Try finding in User collection
+    let user = await UserService.findByEmail(email).withPassword().withUserType().withBasicInfo().execute();
     if (user && (await user.isValidAuth(password))) {
-        const token = user.createAuthToken(InterfaceTypes.Admin.AdminWeb);
-        await UserService .saveAuthToken(user[TableFields.ID], token);
-        return {user, token};
-    } else throw new ValidationError(ValidationMsgs.UnableToLogin);
+        const token = user.createAuthToken();
+        await UserService.saveAuthToken(user[TableFields.ID], token);
+        return { user, token };
+    }
+
+    // Try finding in Admin collection
+    let admin = await AdminService.findByEmail(email).withPassword().withUserType().withBasicInfo().execute();
+    if (admin && (await admin.isValidAuth(password))) {
+        const token = admin.createAuthToken();
+        await AdminService.saveAuthToken(admin[TableFields.ID], token);
+        return { admin, token };
+    }
+
+    throw new ValidationError(ValidationMsgs.UnableToLogin);
 };
 
 exports.forgotPassword = async (req) => {
@@ -39,7 +50,7 @@ exports.forgotPassword = async (req) => {
 
     if (!providedEmail) throw new ValidationError(ValidationMsgs.EmailEmpty);
 
-    let {code, email, name} = await UserService.getResetPasswordToken(providedEmail);
+    let { code, email, name } = await UserService.getResetPasswordToken(providedEmail);
     Email.sendForgotPasswordEmail(code, email, name);
 };
 
@@ -47,7 +58,7 @@ exports.resetPassword = async (req) => {
     let providedEmail = req.body[TableFields.email];
     providedEmail = (providedEmail + "").trim().toLowerCase();
 
-    const {code, newPassword} = req.body;
+    const { code, newPassword } = req.body;
 
     if (!providedEmail) throw new ValidationError(ValidationMsgs.EmailEmpty);
     if (!code) throw new ValidationError(ValidationMsgs.PassResetCodeEmpty);
@@ -57,16 +68,16 @@ exports.resetPassword = async (req) => {
     let token = await createAndStoreAuthToken(user);
     return {
         user: await UserService.getUserById(user[TableFields.ID])
-        .withPassword()
-        .withUserType()
-        .withBasicInfo()
-        .execute(),
+            .withPassword()
+            .withUserType()
+            .withBasicInfo()
+            .execute(),
         token: token || undefined,
     };
 };
 
 exports.changePassword = async (req) => {
-    let {oldPassword, newPassword} = req.body;
+    let { oldPassword, newPassword } = req.body;
 
     if (!oldPassword || !newPassword) throw new ValidationError(ValidationMsgs.ParametersError);
 
@@ -76,7 +87,7 @@ exports.changePassword = async (req) => {
         if (!user.isValidPassword(newPassword)) throw new ValidationError(ValidationMsgs.PasswordInvalid);
         const token = user.createAuthToken();
         await UserService.updatePasswordAndInsertLatestToken(user, newPassword, token);
-        return {token};
+        return { token };
     } else throw new ValidationError(ValidationMsgs.OldPasswordIncorrect);
 };
 
@@ -90,4 +101,3 @@ async function createAndStoreAuthToken(userObj) {
     await UserService.saveAuthToken(userObj[TableFields.ID], token);
     return token;
 }
-

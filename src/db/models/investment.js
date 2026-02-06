@@ -1,56 +1,56 @@
 const mongoose = require("mongoose");
-const {ValidationMsgs, TableNames, TableFields, UserTypes, PlantStatus} = require("../../utils/constants");
+const { ValidationMsgs, TableNames, TableFields, UserTypes, PlantStatus } = require("../../utils/constants");
 
 const investmentSchema = new mongoose.Schema(
     {
         [TableFields.ppaDetail]: {
-            [TableFields.ID] :  false,
-            [TableFields.ppaId] : {
-                type: mongoose.Schema.Types.ObjectId,   
-            },
-            [TableFields.plantId] : {
-                type: mongoose.Schema.Types.ObjectId,   
-            },
-            [TableFields.userId] : {
+            [TableFields.ID]: false,
+            [TableFields.ppaId]: {
                 type: mongoose.Schema.Types.ObjectId,
             },
-            [TableFields.plantCapacity] :{ // size of plant 
+            [TableFields.plantId]: {
+                type: mongoose.Schema.Types.ObjectId,
+            },
+            [TableFields.userId]: {
+                type: mongoose.Schema.Types.ObjectId,
+            },
+            [TableFields.plantCapacity]: { // size of plant 
                 type: Number,
                 required: [true, ValidationMsgs.PlantCapacityEmpty],
             },
         },
         [TableFields.investorDetails]: {
-            [TableFields.ID] :  false,
-            [TableFields.investorId] : {
-                type: mongoose.Schema.Types.ObjectId,   
+            [TableFields.ID]: false,
+            [TableFields.investorId]: {
+                type: mongoose.Schema.Types.ObjectId,
             },
-            [TableFields.userType] : {
+            [TableFields.userType]: {
                 type: Number,
-                enum: Object.values(UserTypes),
+                enum: [2, 3], // Investor = 2, Consumer = 3
             },
-            [TableFields.name_] : {
-                type: string,
+            [TableFields.name_]: {
+                type: String,
                 trim: true,
             },
-            [TableFields.deleted] : {
+            [TableFields.deleted]: {
                 type: Boolean
             }
         },
-        [TableFields.investmentAmount] : {
+        [TableFields.investmentAmount]: {
             type: Number,
             required: [true, ValidationMsgs.InvestmentAmountEmpty]
         },
-        [TableFields.plantCapacityReserved] : {
+        [TableFields.plantCapacityReserved]: {
             type: Number,
         },
-        [TableFields.investmentPercent] : {
+        [TableFields.investmentPercent]: {
             type: Number
         },
-        [TableFields.isActive] : {
+        [TableFields.isActive]: {
             type: Boolean,
             default: false
         },
-        [TableFields.deleted] : {
+        [TableFields.deleted]: {
             type: Boolean,
             default: false,
         },
@@ -61,7 +61,7 @@ const investmentSchema = new mongoose.Schema(
         [TableFields._updatedAt]: {
             type: Date,
         },
-         [TableFields._deletedAt]: {
+        [TableFields._deletedAt]: {
             type: Date,
         },
     },

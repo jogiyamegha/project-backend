@@ -10,7 +10,7 @@ const CronController = require("./schedulers/CronController");
 // const EmailUtil = require("./utils/EmailUtil");
 
 app.use(cors());
-app.use(express.urlencoded({extended: false, limit: "5gb", parameterLimit: 50000})); // To parse application/json
+app.use(express.urlencoded({ extended: false, limit: "5gb", parameterLimit: 50000 })); // To parse application/json
 app.use(
     express.json({
         limit: "5gb",
@@ -18,7 +18,7 @@ app.use(
 ); // To parse application/x-www-form-urlencoded
 app.use(require("./routes/adminRoutes"));
 app.use(require('./routes/userRoutes'));
-// app.use(require('./routes/investorRoutes'));
+app.use(require('./routes/investorRoutes'));
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads"))); //to show image
 app.use("/static_files", express.static(path.join(__dirname, "../static_files"))); //to show csv files

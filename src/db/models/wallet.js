@@ -4,35 +4,35 @@ const { TableNames, TableFields } = require("../../utils/constants");
 const walletSchema = new mongoose.Schema(
     {
         [TableFields.userDetails]: {
-            [TableFields.ID] :  false,
-            [TableFields.userId] : {
-                type: mongoose.Schema.Types.ObjectId,   
+            [TableFields.ID]: false,
+            [TableFields.userId]: {
+                type: mongoose.Schema.Types.ObjectId,
             },
-            [TableFields.userType] : {
+            [TableFields.userType]: {
                 type: Number,
-                enum: Object.values(UserTypes),
+                enum: [2, 3], // Investor: 2, Consumer: 3
             },
-            [TableFields.name_] : {
-                type: string,
+            [TableFields.name_]: {
+                type: String,
                 trim: true,
             },
-            [TableFields.deleted] : {
+            [TableFields.deleted]: {
                 type: Boolean
             }
         },
-        [TableFields.balance] : {
+        [TableFields.balance]: {
             type: Number
         },
-        [TableFields.depositedAmount] : {
+        [TableFields.depositedAmount]: {
             type: Number
         },
-        [TableFields.withdrawalAmount] : {
+        [TableFields.withdrawalAmount]: {
             type: Number
         },
-        [TableFields.totalInvestedAmount] : {
+        [TableFields.totalInvestedAmount]: {
             type: Number
         },
-        [TableFields.totalReturn] : {
+        [TableFields.totalReturn]: {
             type: Number
         },
         [TableFields._createdAt]: {
@@ -42,7 +42,7 @@ const walletSchema = new mongoose.Schema(
         [TableFields._updatedAt]: {
             type: Date,
         },
-         [TableFields._deletedAt]: {
+        [TableFields._deletedAt]: {
             type: Date,
         },
     },
