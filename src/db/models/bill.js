@@ -1,79 +1,79 @@
 const mongoose = require("mongoose");
-const {ValidationMsgs, TableNames, TableFields, Months, UserPaymentMethod } = require("../../utils/constants");
+const { ValidationMsgs, TableNames, TableFields, Months, UserPaymentMethod, PaymentStatusTypes } = require("../../utils/constants");
 
 const billSchema = new mongoose.Schema(
     {
         [TableFields.ppaDetail]: {
-            [TableFields.ID] :  false,
-            [TableFields.ppaId] : {
-                type: mongoose.Schema.Types.ObjectId,   
-            },
-            [TableFields.plantId] : {
-                type: mongoose.Schema.Types.ObjectId,   
-            },
-            [TableFields.userId] : {
+            [TableFields.ID]: false,
+            [TableFields.ppaId]: {
                 type: mongoose.Schema.Types.ObjectId,
             },
-            [TableFields.ppaUniqueId] : {
+            [TableFields.plantId]: {
+                type: mongoose.Schema.Types.ObjectId,
+            },
+            [TableFields.userId]: {
+                type: mongoose.Schema.Types.ObjectId,
+            },
+            [TableFields.ppaUniqueId]: {
                 type: String,
                 trim: true,
             },
-            [TableFields.ppaName] : {
+            [TableFields.ppaName]: {
                 type: String,
                 trim: true,
             },
-            [TableFields.plantUniqueId] : {
+            [TableFields.plantUniqueId]: {
                 type: String,
                 trim: true,
             },
-            [TableFields.plantUniqueName] : {
+            [TableFields.plantUniqueName]: {
                 type: String,
                 trim: true,
             },
-            [TableFields.tarrif] :{ //per uint price of electricity
+            [TableFields.tarrif]: { //per uint price of electricity
                 type: Number,
             },
-            [TableFields.plantCapacity] :{ // size of plant 
+            [TableFields.plantCapacity]: { // size of plant 
                 type: Number,
             },
         },
-        [TableFields.billingMonth] : {
+        [TableFields.billingMonth]: {
             type: Number,
             enum: Object.values(Months),
-            required: [true ,ValidationMsgs.BillingMonthEmpty]
+            required: [true, ValidationMsgs.BillingMonthEmpty]
         },
-        [TableFields.billingYear] : {
+        [TableFields.billingYear]: {
             type: Number,
-            required: [true ,ValidationMsgs.BillingYearEmpty]
+            required: [true, ValidationMsgs.BillingYearEmpty]
         },
-        [TableFields.generatedUnits] : {
+        [TableFields.generatedUnits]: {
             type: Number,
-            required: [true ,ValidationMsgs.GeneratedUnitsEmpty]
+            required: [true, ValidationMsgs.GeneratedUnitsEmpty]
         },
-        [TableFields.consumedUnits] : {
+        [TableFields.consumedUnits]: {
             type: Number,
-            required: [true ,ValidationMsgs.ConsumedUnitsEmpty]        
+            required: [true, ValidationMsgs.ConsumedUnitsEmpty]
         },
-        [TableFields.exportedUnits] : {
+        [TableFields.exportedUnits]: {
             type: Number,
-            required: [true ,ValidationMsgs.ExportedUnitsEmpty]        
+            required: [true, ValidationMsgs.ExportedUnitsEmpty]
         },
-        [TableFields.totalAmount] : {
+        [TableFields.totalAmount]: {
             type: Number,
         },
-        [TableFields.userPaymentMethod] : {
+        [TableFields.userPaymentMethod]: {
             type: Number,
-            enum : Object.values(UserPaymentMethod),
+            enum: Object.values(UserPaymentMethod),
         },
-        [TableFields.isPaid] : {
+        [TableFields.isPaid]: {
             type: Boolean,
             default: false,
         },
-        [TableFields.paymentRefId] : {
+        [TableFields.paymentRefId]: {
             type: String,
             trim: true
         },
-        [TableFields.paymentDate] : {
+        [TableFields.paymentDate]: {
             type: Date
         },
         [TableFields.paymentIntentId]: {
@@ -91,14 +91,14 @@ const billSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        [TableFields.paymentReleasedAt]: {type: Date},
-        [TableFields.paymentReceived]: {type: Boolean, default: false},
-        [TableFields.paymentReceivedAt]: {type: Date},
-        [TableFields.deleted] : {
+        [TableFields.paymentReleasedAt]: { type: Date },
+        [TableFields.paymentReceived]: { type: Boolean, default: false },
+        [TableFields.paymentReceivedAt]: { type: Date },
+        [TableFields.deleted]: {
             type: Boolean,
             default: false,
-        }, 
-        [TableFields.ppaDeleted] : {
+        },
+        [TableFields.ppaDeleted]: {
             type: Boolean,
             default: false,
         },
@@ -109,8 +109,17 @@ const billSchema = new mongoose.Schema(
         [TableFields._updatedAt]: {
             type: Date,
         },
-         [TableFields._deletedAt]: {
+        [TableFields._deletedAt]: {
             type: Date,
+        },
+        [TableFields.adminNote]: {
+            type: String,
+            trim: true
+        },
+        [TableFields.paymentStatus]: {
+            type: Number,
+            enum: Object.values(PaymentStatusTypes),
+            default: PaymentStatusTypes.Pending
         },
     },
     {

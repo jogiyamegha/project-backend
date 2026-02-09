@@ -1,13 +1,13 @@
-const {ValidationMsgs, TableFields, TableNames, PlantStatus} = require("../../utils/constants");
+const { ValidationMsgs, TableFields, TableNames, PlantStatus } = require("../../utils/constants");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
 const Wallet = require("../models/wallet");
-const {MongoUtil} = require("../mongoose");
+const { MongoUtil } = require("../mongoose");
 
 class WalletService {
     static getUserById = (userId) => {
         return new ProjectionBuilder(async function () {
-            return await Wallet.findOne({[TableFields.ID]: userId}, this);
+            return await Wallet.findOne({ [TableFields.ID]: userId }, this);
         });
     };
 
@@ -60,30 +60,29 @@ class WalletService {
                 Wallet.find(searchQuery, this)
                     .limit(parseInt(limit))
                     .skip(parseInt(skip))
-                    .sort({[sortKey]: parseInt(sortOrder)}),
-            ]).then(([total, records]) => ({total, records}));
+                    .sort({ [sortKey]: parseInt(sortOrder) }),
+            ]).then(([total, records]) => ({ total, records }));
         });
     };
 
-    static updateRecord = async (recordId, updatedUserFields = {}) => {
-        if (await DiseaseService.existsWithName(updatedUserFields[TableFields.name_], recordId)) {
-            throw new ValidationError(ValidationMsgs.DiseaseExist);
-        }
-
-        let record = await Disease.findByIdAndUpdate(
+    static updateRecord = async (recordId, updatedFields = {}) => {
+        let record = await Wallet.findByIdAndUpdate(
             recordId,
             {
-                ...updatedUserFields,
-                [TableFields._updatedAt]: Date.now(),
+                $set: {
+                    ...updatedFields,
+                    [TableFields._updatedAt]: Date.now(),
+                },
             },
             {
-                new: false,
-                projection: {[TableFields.ID]: 1},
+                new: true,
+                projection: { [TableFields.ID]: 1, [TableFields.balance]: 1 },
             }
         );
         if (!record) {
             throw new ValidationError(ValidationMsgs.RecordNotFound);
         }
+        return record;
     };
 
     static deleteMyReferences = async (cascadeDeleteMethodReference, tableName, ...referenceId) => {

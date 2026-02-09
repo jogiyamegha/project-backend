@@ -1,17 +1,17 @@
-const {ValidationMsgs, TableFields, TableNames, PlantStatus} = require("../../utils/constants");
-const {removeFileById, Folders} = require("../../utils/storage");
+const { ValidationMsgs, TableFields, TableNames, PlantStatus } = require("../../utils/constants");
+const { removeFileById, Folders } = require("../../utils/storage");
 const { StripeManager } = require("../../utils/stripeManager");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
 const Plant = require("../models/plant");
-const {MongoUtil} = require("../mongoose");
+const { MongoUtil } = require("../mongoose");
 const UserService = require("./UserService");
 const PDFCreator = require("../../utils/pdfCreator")
 
 class PlantService {
     static getUserById = (userId) => {
         return new ProjectionBuilder(async function () {
-            return await Plant.findOne({[TableFields.ID]: userId}, this);
+            return await Plant.findOne({ [TableFields.ID]: userId }, this);
         });
     };
 
@@ -40,23 +40,23 @@ class PlantService {
 
     static generatePlantPdf = async (plant) => {
         const utcOffset = 330;
-        const plantData = [];  
+        const plantData = [];
         plantData.push(plant);
-    
+
         let contents = [
             ...PDFCreator.getTitleHeader('Plant Information',
-            null, null,
-            Util.formatToDdMmYyyyWithTime(new Date(), utcOffset))
+                null, null,
+                Util.formatToDdMmYyyyWithTime(new Date(), utcOffset))
         ]
-    
+
         contents.push(PDFCreator.getTwoLineBreak());
 
         contents.push([{
             columns: [
-                { text: `PLANT ID: ${plant[TableFields.plantUniqueId] || '-'}`, style: 'tableData3', alignment: 'left'},
+                { text: `PLANT ID: ${plant[TableFields.plantUniqueId] || '-'}`, style: 'tableData3', alignment: 'left' },
             ]
         }]);
-    
+
         contents.push(PDFCreator.getOneLineBreak());
 
         contents.push([{
@@ -65,71 +65,71 @@ class PlantService {
             ]
         }]);
         contents.push(PDFCreator.getOneLineBreak());
-        
+
         contents.push({
             columns: [
                 { text: `Plant (Property) Name: ${plant?.[TableFields.propertyAddress]?.[TableFields.propertyName]}`, style: 'tableData3', alignment: 'left' },
             ]
         });
-    
+
         contents.push(PDFCreator.getOneLineBreak());
-        
+
         contents.push({
             columns: [
                 { text: `Property Type: ${plant?.[TableFields.propertyAddress]?.[TableFields.propertyType]}`, style: 'tableData3', alignment: 'left' },
             ]
         });
-    
+
         contents.push(PDFCreator.getOneLineBreak());
-        
+
         contents.push({
             columns: [
                 { text: `Plant (Property) Address: ${plant?.[TableFields.propertyAddress]?.[TableFields.address]}`, style: 'tableData3', alignment: 'left' },
             ]
         });
-        
+
         contents.push(PDFCreator.getOneLineBreak());
-        
+
         contents.push({
             columns: [
                 { text: `Plant RoofArea : ${plant?.[TableFields.propertyAddress]?.[TableFields.roofArea]}`, style: 'tableData3', alignment: 'left' },
             ]
         });
-    
+
         contents.push(PDFCreator.getOneLineBreak());
-        
+
         contents.push({
             columns: [
                 { text: `Plant (Property) Pincode: ${plant?.[TableFields.propertyAddress]?.[TableFields.pincode]}`, style: 'tableData3', alignment: 'left' },
             ]
-        }); 
-        
+        });
+
         contents.push(PDFCreator.getOneLineBreak());
-        
+
         contents.push({
             columns: [
                 { text: `Plant (Property) City: ${plant?.[TableFields.propertyAddress]?.[TableFields.city]}`, style: 'tableData3', alignment: 'left' },
             ]
         });
-        
+
         contents.push(PDFCreator.getOneLineBreak());
-        
+
         contents.push({
             columns: [
                 { text: `Plant (Property) State: ${plant?.[TableFields.propertyAddress]?.[TableFields.state]}`, style: 'tableData3', alignment: 'left' },
             ]
         });
-    
+
         contents.push(PDFCreator.getOneLineBreak());
-    
+
         contents.push({
             columns: [
                 { text: `Bill Amount: ${plant?.[TableFields.propertyAddress]?.[TableFields.billAmount]}`, style: 'tableData3', alignment: 'left' },
             ]
         });
-        
+
         contents.push(PDFCreator.getOneLineBreak());
-    
+
         contents.push({
             columns: [
                 { text: `Electricity rate: ${plant?.[TableFields.propertyAddress]?.[TableFields.electricityRate]}`, style: 'tableData3', alignment: 'left' },
@@ -155,44 +155,44 @@ class PlantService {
             if (searchTerm) {
                 searchQuery = {
                     $or: [
-                            {
-                                [TableFields.plantUniqueId] : {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                }
+                        {
+                            [TableFields.plantUniqueId]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
+                            }
+                        },
+                        {
+                            [TableFields.plantUniqueName]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
+                            }
+                        },
+                        {
+                            [`${TableFields.propertyAddress}.${TableFields.address}`]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
                             },
-                            {
-                                [TableFields.plantUniqueName] : {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                }
+                        },
+                        {
+                            [`${TableFields.propertyAddress}.${TableFields.city}`]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
                             },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.address}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
+                        },
+                        {
+                            [`${TableFields.propertyAddress}.${TableFields.state}`]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
                             },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.city}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
-                            {
-                                [`${TableFields.propertyAddress}.${TableFields.state}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
-                            },
+                        },
                     ],
                 };
             }
-            
+
             if (filter.userId) {
                 searchQuery[`${TableFields.userDetails}.${TableFields.userId}`] = filter.userId;
             }
-            
+
             if (filter.plantStatus) {
                 searchQuery[TableFields.plantStatus] = Number(filter.plantStatus);
             }
@@ -206,8 +206,8 @@ class PlantService {
                 Plant.find(searchQuery, this)
                     .limit(parseInt(limit))
                     .skip(parseInt(skip))
-                    .sort({[sortKey]: parseInt(sortOrder)}),
-            ]).then(([total, records]) => ({total, records}));
+                    .sort({ [sortKey]: parseInt(sortOrder) }),
+            ]).then(([total, records]) => ({ total, records }));
         });
     };
 
@@ -230,7 +230,7 @@ class PlantService {
         return record;
     };
 
-    static updatePlantStatus = async (plantId, plantStatus, user, plantUniqueName) => {
+    static updatePlantStatus = async (plantId, plantStatus, user, plantUniqueName, adminNote) => {
         const status = Number(plantStatus);
 
         let updatePayload = {
@@ -242,13 +242,13 @@ class PlantService {
                 throw new ValidationError(ValidationMsgs.PlantUniqueNameEmpty)
             }
             const isValidPlantUniqueName = Util.isValidPlantUniqueName(plantUniqueName);
-            if(!isValidPlantUniqueName) {
+            if (!isValidPlantUniqueName) {
                 throw new ValidationError(ValidationMsgs.InvalidPlantUniqueName);
             }
             const upperName = plantUniqueName.toUpperCase().trim();
-            
-            updatePayload[TableFields.plantUniqueName] = upperName;            
-            
+
+            updatePayload[TableFields.plantUniqueName] = upperName;
+
             updatePayload[`${TableFields.approvedBy}.${TableFields.userDetails}`] = {
                 [TableFields.userId]: user[TableFields.ID],
                 [TableFields.userType]: user[TableFields.userType],
@@ -269,7 +269,7 @@ class PlantService {
             )
 
             await UserService.updateRecord(customerId, {
-                [TableFields.stripeCustomerId] : stripeCustomer.id
+                [TableFields.stripeCustomerId]: stripeCustomer.id
             })
         }
 
@@ -279,8 +279,12 @@ class PlantService {
                 [TableFields.userType]: user[TableFields.userType],
                 [TableFields.name_]: user[TableFields.name_],
                 [TableFields.rejectedOn]: new Date(),
-                [TableFields.rejectionReason] : 'rejection reason'
+                [TableFields.rejectionReason]: 'rejection reason'
             };
+        }
+
+        if (adminNote) {
+            updatePayload[TableFields.adminNote] = adminNote;
         }
 
         await Plant.updateOne(
@@ -309,7 +313,7 @@ class PlantService {
     static updateDelete = async (plantId) => {
         return await Plant.updateOne(
             {
-                [TableFields.ID] : MongoUtil.toObjectId(plantId)
+                [TableFields.ID]: MongoUtil.toObjectId(plantId)
             },
             {
                 $set: {
@@ -357,9 +361,9 @@ const ProjectionBuilder = class {
     constructor(methodToExecute) {
         const projection = {};
         this.withBasicInfo = () => {
-            projection[TableFields.ID] = 1;            
-            projection[TableFields.plantUniqueName] = 1;            
-            projection[TableFields.plantUniqueId] = 1;            
+            projection[TableFields.ID] = 1;
+            projection[TableFields.plantUniqueName] = 1;
+            projection[TableFields.plantUniqueId] = 1;
             projection[TableFields.userDetails] = 1;
             projection[TableFields.propertyAddress] = 1;
             projection[TableFields.plantStatus] = 1;

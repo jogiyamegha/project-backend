@@ -1,13 +1,13 @@
-const {ValidationMsgs, TableFields, TableNames, PlantStatus, UserPaymentMethod} = require("../../utils/constants");
+const { ValidationMsgs, TableFields, TableNames, PlantStatus, UserPaymentMethod } = require("../../utils/constants");
 const Util = require("../../utils/util");
 const ValidationError = require("../../utils/ValidationError");
 const Bill = require("../models/bill");
-const {MongoUtil} = require("../mongoose");
+const { MongoUtil } = require("../mongoose");
 
 class BillService {
     static getUserById = (userId) => {
         return new ProjectionBuilder(async function () {
-            return await Bill.findOne({[TableFields.ID]: userId}, this);
+            return await Bill.findOne({ [TableFields.ID]: userId }, this);
         });
     };
 
@@ -19,7 +19,7 @@ class BillService {
 
     static existForMonthPpaId = async (ppaId, billingMonth, billingYear) => {
         return await Bill.exists({
-            [`${TableFields.ppaDetail}.${TableFields.ppaId}`] : MongoUtil.toObjectId(ppaId),
+            [`${TableFields.ppaDetail}.${TableFields.ppaId}`]: MongoUtil.toObjectId(ppaId),
             [TableFields.billingMonth]: billingMonth,
             [TableFields.billingYear]: billingYear,
         })
@@ -55,18 +55,18 @@ class BillService {
             if (searchTerm) {
                 searchQuery = {
                     $or: [
-                            {
-                                [`${TableFields.ppaDetail}.${TableFields.ppaName}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
+                        {
+                            [`${TableFields.ppaDetail}.${TableFields.ppaName}`]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
                             },
-                            {
-                                [`${TableFields.ppaDetail}.${TableFields.ppaUniqueId}`]: {
-                                    $regex: Util.wrapWithRegexQry(searchTerm),
-                                    $options: "i",
-                                },
+                        },
+                        {
+                            [`${TableFields.ppaDetail}.${TableFields.ppaUniqueId}`]: {
+                                $regex: Util.wrapWithRegexQry(searchTerm),
+                                $options: "i",
                             },
+                        },
                     ],
                 };
             }
@@ -95,8 +95,8 @@ class BillService {
                 Bill.find(searchQuery, this)
                     .limit(parseInt(limit))
                     .skip(parseInt(skip))
-                    .sort({[sortKey]: parseInt(sortOrder)}),
-            ]).then(([total, records]) => ({total, records}));
+                    .sort({ [sortKey]: parseInt(sortOrder) }),
+            ]).then(([total, records]) => ({ total, records }));
         });
     };
 
@@ -124,21 +124,35 @@ class BillService {
             MongoUtil.toObjectId(recordId),
             {
                 ...updatedFields,
-                [TableFields._updatedAt] : new Date()
+                [TableFields._updatedAt]: new Date()
             },
             { new: true }
         )
     }
 
-    static updateCashPayment = async (billId) => {
+    static requestCashPayment = async (billId) => {
         return await Bill.updateOne(
             {
-                [TableFields.ID] : MongoUtil.toObjectId(billId),
+                [TableFields.ID]: MongoUtil.toObjectId(billId),
             },
             {
-                [TableFields.userPaymentMethod] : UserPaymentMethod.Cash,
-                [TableFields.isPaid] : true,
-                [TableFields.paymentDate] : new Date(),
+                [TableFields.userPaymentMethod]: UserPaymentMethod.Cash,
+                [TableFields.paymentStatus]: 2, // Processing
+            }
+        )
+    }
+
+    static updateCashPayment = async (billId, adminNote) => {
+        return await Bill.updateOne(
+            {
+                [TableFields.ID]: MongoUtil.toObjectId(billId),
+            },
+            {
+                [TableFields.userPaymentMethod]: UserPaymentMethod.Cash,
+                [TableFields.isPaid]: true,
+                [TableFields.paymentStatus]: 3, // Completed
+                [TableFields.paymentDate]: new Date(),
+                [TableFields.adminNote]: adminNote
             }
         )
     }
@@ -147,10 +161,10 @@ class BillService {
         const { plantUniqueName } = plantObj
         await Bill.updateMany(
             {
-                [TableFields.ppaDetail + '.' + TableFields.plantId] : MongoUtil.toObjectId(plantId)
+                [TableFields.ppaDetail + '.' + TableFields.plantId]: MongoUtil.toObjectId(plantId)
             },
             {
-                [TableFields.ppaDetail + '.' + TableFields.plantUniqueName] : plantUniqueName,
+                [TableFields.ppaDetail + '.' + TableFields.plantUniqueName]: plantUniqueName,
             }
         )
     }
@@ -165,15 +179,15 @@ class BillService {
 
         await Bill.updateMany(
             {
-                [TableFields.ppaDetail + '.' + TableFields.ppaId] : MongoUtil.toObjectId(ppaId)
+                [TableFields.ppaDetail + '.' + TableFields.ppaId]: MongoUtil.toObjectId(ppaId)
             },
             {
-                [TableFields.ppaDetail + '.' + TableFields.plantId] : plantId,
-                [TableFields.ppaDetail + '.' + TableFields.plantUniqueId] : plantUniqueId,
-                [TableFields.ppaDetail + '.' + TableFields.plantUniqueName] : plantUniqueName,
-                [TableFields.ppaDetail + '.' + TableFields.ppaName] : ppaName,
-                [TableFields.ppaDetail + '.' + TableFields.tarrif] : tarrif,
-                [TableFields.ppaDetail + '.' + TableFields.plantCapacity] : plantCapacity,
+                [TableFields.ppaDetail + '.' + TableFields.plantId]: plantId,
+                [TableFields.ppaDetail + '.' + TableFields.plantUniqueId]: plantUniqueId,
+                [TableFields.ppaDetail + '.' + TableFields.plantUniqueName]: plantUniqueName,
+                [TableFields.ppaDetail + '.' + TableFields.ppaName]: ppaName,
+                [TableFields.ppaDetail + '.' + TableFields.tarrif]: tarrif,
+                [TableFields.ppaDetail + '.' + TableFields.plantCapacity]: plantCapacity,
             }
         )
     }
@@ -194,7 +208,7 @@ class BillService {
     static updateDelete = async (billId) => {
         return await Bill.updateOne(
             {
-                [TableFields.ID] : MongoUtil.toObjectId(billId)
+                [TableFields.ID]: MongoUtil.toObjectId(billId)
             },
             {
                 $set: {

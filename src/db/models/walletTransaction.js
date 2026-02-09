@@ -1,89 +1,89 @@
 const mongoose = require("mongoose");
-const { TableNames, TableFields, UserTypes, ValidationMsgs, Method, TransactionType } = require("../../utils/constants");
+const { TableNames, TableFields, UserTypes, ValidationMsgs, Method, TransactionType, TransactionStatus } = require("../../utils/constants");
 
 const walletTransactionSchema = new mongoose.Schema(
     {
-        [TableFields.fromUserDetail] : {
-            [TableFields.walletId] : {
+        [TableFields.fromUserDetail]: {
+            [TableFields.walletId]: {
                 type: mongoose.Schema.Types.ObjectId
             },
             [TableFields.userDetails]: {
-                [TableFields.ID] :  false,
-                [TableFields.userId] : {
-                    type: mongoose.Schema.Types.ObjectId,   
+                [TableFields.ID]: false,
+                [TableFields.userId]: {
+                    type: mongoose.Schema.Types.ObjectId,
                 },
-                [TableFields.userType] : {
+                [TableFields.userType]: {
                     type: Number,
                     enum: Object.values(UserTypes),
                 },
-                [TableFields.name_] : {
-                    type: string,
+                [TableFields.name_]: {
+                    type: String,
                     trim: true,
                 },
-                [TableFields.deleted] : {
+                [TableFields.deleted]: {
                     type: Boolean
                 }
-            }, 
-            [TableFields.balance] : {
+            },
+            [TableFields.balance]: {
                 type: Number
-            },          
+            },
         },
-        [TableFields.toUserDetail] : {
-            [TableFields.walletId] : {
+        [TableFields.toUserDetail]: {
+            [TableFields.walletId]: {
                 type: mongoose.Schema.Types.ObjectId
             },
             [TableFields.userDetails]: {
-                [TableFields.ID] :  false,
-                [TableFields.userId] : {
-                    type: mongoose.Schema.Types.ObjectId,   
+                [TableFields.ID]: false,
+                [TableFields.userId]: {
+                    type: mongoose.Schema.Types.ObjectId,
                 },
-                [TableFields.userType] : {
+                [TableFields.userType]: {
                     type: Number,
                     enum: Object.values(UserTypes),
                 },
-                [TableFields.name_] : {
-                    type: string,
+                [TableFields.name_]: {
+                    type: String,
                     trim: true,
                 },
-                [TableFields.deleted] : {
+                [TableFields.deleted]: {
                     type: Boolean
                 }
             },
-            [TableFields.balance] : {
+            [TableFields.balance]: {
                 type: Number
             },
         },
-        [TableFields.transactionType] : {
+        [TableFields.transactionType]: {
             type: Number,
             enum: Object.values(TransactionType)
         },
-        [TableFields.transactionAmount] : {
+        [TableFields.transactionAmount]: {
             type: Number,
         },
-        [TableFields.transactionId] : {
+        [TableFields.transactionId]: {
             type: String,
             trim: true,
         },
-        [TableFields.transactionStatus] : {
+        [TableFields.transactionStatus]: {
             type: Number,
             enum: Object.values(TransactionStatus)
         },
-        [TableFields.bankReferenceId] : {
+        [TableFields.bankReferenceId]: {
             type: String,
             trim: true,
         },
-        [TableFields.description] : {
+        [TableFields.description]: {
             type: String,
             trim: true,
         },
-        [TableFields.note] : {
+        [TableFields.note]: {
             type: String,
             trim: true,
         },
-        [TableFields.processedAt] : {
+        [TableFields.processedAt]: {
             type: Date
         },
-        [TableFields.processedBy] : {
+        [TableFields.processedBy]: {
             type: mongoose.Schema.Types.ObjectId
         },
         [TableFields._createdAt]: {
@@ -93,7 +93,7 @@ const walletTransactionSchema = new mongoose.Schema(
         [TableFields._updatedAt]: {
             type: Date,
         },
-         [TableFields._deletedAt]: {
+        [TableFields._deletedAt]: {
             type: Date,
         },
     },

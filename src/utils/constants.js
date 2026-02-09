@@ -433,6 +433,7 @@ const TableFields = (function () {
     TableFields.androidUnderMaintenance = "androidUnderMaintenance";
     TableFields.iOSForceUpdate = "iOSForceUpdate";
     TableFields.androidForceUpdate = "androidForceUpdate";
+    TableFields.adminNote = "adminNote";
     return TableFields;
 })();
 

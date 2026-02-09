@@ -1,105 +1,61 @@
-const { MongoUtil } = require('../../db/mongoose');
-const BillService = require('../../db/services/BillService');
-const { TableFields, ValidationMsgs, TableNames, UserTypes } = require('../../utils/constants');
-const ValidationError = require('../../utils/ValidationError');
-const Util = require('../../utils/util');
-const PpaService = require('../../db/services/PpaService');
+const WalletService = require("../../db/services/WalletService");
+const WalletTransactionService = require("../../db/services/WalletTransactionService");
+const { TableFields, ValidationMsgs, TableNames, UserTypes, TransactionType, TransactionStatus } = require("../../utils/constants");
+const ValidationError = require("../../utils/ValidationError");
+const CounterService = require("../../db/services/CounterService");
 
-exports.generateBill = async (req) => {
+exports.requestDeposit = async (req) => {
     const reqBody = req.body;
-    const ppaId = reqBody[TableFields.ppaId];
-    const billingMonth = reqBody[TableFields.billingMonth];
-    const billingYear = reqBody[TableFields.billingYear];
+    const user = req.user;
+    const userId = user[TableFields.ID];
+    const amount = reqBody[TableFields.amount];
 
-    if(!ppaId) {
-        throw new ValidationError(ValidationMsgs.PpaIdEmpty)
-    }
-    if(!billingMonth) {
-        throw new ValidationError(ValidationMsgs.BillingMonthEmpty)
-    }
-    if(!billingYear) {
-        throw new ValidationError(ValidationMsgs.BillingYearEmpty)
+    if (!amount || amount <= 0) {
+        throw new ValidationError("Invalid amount");
     }
 
-    const billExists = await BillService.existForMonthPpaId(ppaId, billingMonth, billingYear) 
-    if(billExists) {
-        throw new ValidationError(ValidationMsgs.BillAlreadyGeneratedForMonthPpa)
-    }
-    let data = await parseAndValidateBill(
-        reqBody,
-        undefined,
-        false,
-        async(updatedField) => {
-            return await BillService.insertRecord(updatedField);
-        }
-    )
-    return data;
-}
- 
-exports.listBills = async (req) => {
-      return await BillService.listBills({
-        ...req.query
-    }).withBasicInfo().execute()
-}
-
-async function parseAndValidateBill(
-    reqBody,
-    existingBill = {},
-    update = false,
-    onValidationCompleted = async (updatedUserFields) => {}
-) {
-
-    const ppaId = reqBody[TableFields.ppaId];
-
-    if (isFieldEmpty(ppaId, existingBill[`${TableFields.ppaDetail}.${TableFields.ppaId}`])) {
-        throw new ValidationError(ValidationMsgs.PpaIdEmpty);
-    }
-    if (isFieldEmpty(reqBody[TableFields.billingMonth], existingBill[TableFields.billingMonth])) {
-        throw new ValidationError(ValidationMsgs.BillingMonthEmpty);
-    }
-    if (isFieldEmpty(reqBody[TableFields.billingYear], existingBill[TableFields.billingYear])) {
-        throw new ValidationError(ValidationMsgs.BillingYearEmpty);
-    }
-    if (isFieldEmpty(reqBody[TableFields.generatedUnits], existingBill[TableFields.generatedUnits])) {
-        throw new ValidationError(ValidationMsgs.GeneratedUnitsEmpty);
-    }
-    if (isFieldEmpty(reqBody[TableFields.consumedUnits], existingBill[TableFields.consumedUnits])) {
-        throw new ValidationError(ValidationMsgs.ConsumedUnitsEmpty);
-    } 
-    if (isFieldEmpty(reqBody[TableFields.exportedUnits], existingBill[TableFields.exportedUnits])) {
-        throw new ValidationError(ValidationMsgs.ExportedUnitsEmpty);
-    }
-
-    const ppaInfo = await PpaService.getUserById(ppaId).withBasicInfo().execute();
-    const totalAmount = reqBody[TableFields.consumedUnits] * ppaInfo?.[TableFields.tarrif]
-    try {
-        let response = await onValidationCompleted({
-            [TableFields.ppaDetail] : {
-                [TableFields.ppaId] : ppaId,
-                [TableFields.plantId]: ppaInfo?.[TableFields.plantId],
-                [TableFields.userId]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.userId],
-                [TableFields.tarrif]: ppaInfo?.[TableFields.tarrif],
-                [TableFields.plantCapacity]: ppaInfo?.[TableFields.plantCapacity],
+    // Ensure wallet exists for user, if not create one
+    let wallet = await WalletService.getUserById(userId).withId().execute();
+    if (!wallet) {
+        wallet = await WalletService.insertRecord({
+            [TableFields.ID]: userId,
+            [TableFields.userDetails]: {
+                [TableFields.userId]: userId,
+                [TableFields.userType]: user[TableFields.userType],
+                [TableFields.name_]: user[TableFields.name_]
             },
-            [TableFields.billingMonth] : reqBody[TableFields.billingMonth],
-            [TableFields.billingYear] : reqBody[TableFields.billingYear],
-            [TableFields.generatedUnits] : reqBody[TableFields.generatedUnits],
-            [TableFields.consumedUnits] : reqBody[TableFields.consumedUnits],
-            [TableFields.exportedUnits] : reqBody[TableFields.exportedUnits],
-            [TableFields.totalAmount] : totalAmount || 0,
-        })
-        return response;
-    } catch (error) {
-        throw error;
+            [TableFields.balance]: 0
+        });
     }
-}
-function isFieldEmpty(providedField, existingField) {
-    if (providedField != undefined) {
-        if (providedField) {
-            return false;
-        }
-    } else if (existingField) {
-        return false;
-    }
-    return true;
+
+    const transaction = await WalletTransactionService.insertRecord({
+        [TableFields.fromUserDetail]: {
+            [TableFields.walletId]: wallet[TableFields.ID],
+            [TableFields.userId]: userId,
+            [TableFields.userType]: user[TableFields.userType],
+            [TableFields.name_]: user[TableFields.name_]
+        },
+        [TableFields.transactionType]: TransactionType.BillPayment, // Or a dedicated Deposit type if available, reusing BillPayment as 'Payment' context or add Deposit to constants
+        [TableFields.transactionAmount]: amount,
+        [TableFields.transactionStatus]: TransactionStatus.Pending,
+        [TableFields.description]: "Wallet Deposit Request (Cash/Bank)",
+        [TableFields.bankReferenceId]: reqBody[TableFields.bankReferenceId], // Optional
+        [TableFields.transactionId]: `TXN-${Date.now()}`
+    });
+
+    return transaction;
+};
+
+exports.listTransactions = async (req) => {
+    const user = req.user;
+    return await WalletTransactionService.listTransactions({
+        ...req.query,
+        userId: user[TableFields.ID]
+    }).withBasicInfo().withTimeStamps().execute();
+};
+
+exports.getWalletBalance = async (req) => {
+    const user = req.user;
+    const wallet = await WalletService.getUserById(user[TableFields.ID]).withBasicInfo().execute();
+    return wallet || { balance: 0 };
 }

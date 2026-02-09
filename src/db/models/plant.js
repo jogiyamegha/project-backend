@@ -1,134 +1,134 @@
 const mongoose = require("mongoose");
-const {ValidationMsgs, TableNames, TableFields, UserTypes, PlantStatus, PropertyTypes} = require("../../utils/constants");
+const { ValidationMsgs, TableNames, TableFields, UserTypes, PlantStatus, PropertyTypes } = require("../../utils/constants");
 const { getUrl, Folders } = require("../../utils/storage");
 
 const plantSchema = new mongoose.Schema(
     {
-        [TableFields.plantUniqueId] : {
+        [TableFields.plantUniqueId]: {
             type: String,
             trim: true,
         },
-        [TableFields.plantUniqueName] : {
+        [TableFields.plantUniqueName]: {
             type: String,
             trim: true,
         },
         [TableFields.userDetails]: {
-            [TableFields.ID] :  false,
-            [TableFields.userId] : {
-                type: mongoose.Schema.Types.ObjectId,   
+            [TableFields.ID]: false,
+            [TableFields.userId]: {
+                type: mongoose.Schema.Types.ObjectId,
             },
-            [TableFields.userType] : {
+            [TableFields.userType]: {
                 type: Number,
                 enum: Object.values(UserTypes),
             },
-            [TableFields.name_] : {
+            [TableFields.name_]: {
                 type: String,
                 trim: true,
             },
         },
-        [TableFields.propertyAddress] : {
-            [TableFields.propertyName] : {
+        [TableFields.propertyAddress]: {
+            [TableFields.propertyName]: {
                 type: String,
-                trim : true,
-                required : [true, ValidationMsgs.PropertyNameEmpty]
+                trim: true,
+                required: [true, ValidationMsgs.PropertyNameEmpty]
             },
-            [TableFields.propertyType] : {
+            [TableFields.propertyType]: {
                 type: Number,
                 enum: Object.values(PropertyTypes),
-                required : [true, ValidationMsgs.PropertyTypeEmpty]
+                required: [true, ValidationMsgs.PropertyTypeEmpty]
             },
-            [TableFields.address] : {
+            [TableFields.address]: {
                 type: String,
-                trim : true,
-                required : [true, ValidationMsgs.AddressEmpty]
+                trim: true,
+                required: [true, ValidationMsgs.AddressEmpty]
             },
-            [TableFields.city] : {
+            [TableFields.city]: {
                 type: String,
-                trim : true,
-                required : [true, ValidationMsgs.CityEmpty]
+                trim: true,
+                required: [true, ValidationMsgs.CityEmpty]
             },
-            [TableFields.state] : {
+            [TableFields.state]: {
                 type: String,
-                trim : true,
-                required : [true, ValidationMsgs.StateEmpty]
+                trim: true,
+                required: [true, ValidationMsgs.StateEmpty]
             },
-            [TableFields.pincode] : {
+            [TableFields.pincode]: {
                 type: String,
-                trim : true,
-                required : [true, ValidationMsgs.PincodeEmpty]
+                trim: true,
+                required: [true, ValidationMsgs.PincodeEmpty]
             },
-            [TableFields.roofArea] : {
+            [TableFields.roofArea]: {
                 type: Number
             },
-            [TableFields.billAmount] : {
+            [TableFields.billAmount]: {
                 type: Number,
-                required : [true, ValidationMsgs.BillAmountEmpty]
+                required: [true, ValidationMsgs.BillAmountEmpty]
             },
             [TableFields.billImage]: {
                 type: String,
                 trim: true,
-                required : [true, ValidationMsgs.BillImageEmpty]
+                required: [true, ValidationMsgs.BillImageEmpty]
             },
-            [TableFields.electricityRate] :{
+            [TableFields.electricityRate]: {
                 type: Number
             }
         },
-        [TableFields.plantStatus] : {
+        [TableFields.plantStatus]: {
             type: Number,
             enum: Object.values(PlantStatus),
             default: PlantStatus.Submitted,
         },
-        [TableFields.approvedBy] : {
+        [TableFields.approvedBy]: {
             [TableFields.userDetails]: {
-                [TableFields.ID] :  false,
-                [TableFields.userId] : {
-                    type: mongoose.Schema.Types.ObjectId,   
+                [TableFields.ID]: false,
+                [TableFields.userId]: {
+                    type: mongoose.Schema.Types.ObjectId,
                 },
-                [TableFields.userType] : {
+                [TableFields.userType]: {
                     type: Number,
                     enum: Object.values(UserTypes),
                 },
-                [TableFields.name_] : {
+                [TableFields.name_]: {
                     type: String,
                     trim: true,
                 },
-                [TableFields.approvedOn] : {
+                [TableFields.approvedOn]: {
                     type: Date,
                 }
             },
         },
-        [TableFields.rejectedBy] : {
+        [TableFields.rejectedBy]: {
             [TableFields.userDetails]: {
-                [TableFields.ID] :  false,
-                [TableFields.userId] : {
-                    type: mongoose.Schema.Types.ObjectId,   
+                [TableFields.ID]: false,
+                [TableFields.userId]: {
+                    type: mongoose.Schema.Types.ObjectId,
                 },
-                [TableFields.userType] : {
+                [TableFields.userType]: {
                     type: Number,
                     enum: Object.values(UserTypes),
                 },
-                [TableFields.name_] : {
+                [TableFields.name_]: {
                     type: String,
                     trim: true,
                 },
-                [TableFields.rejectedOn] : {
+                [TableFields.rejectedOn]: {
                     type: Date,
                 },
-                [TableFields.rejectionReason] : {
+                [TableFields.rejectionReason]: {
                     type: String,
                     trim: true
                 }
             },
         },
-        [TableFields.isActive] : {
+        [TableFields.isActive]: {
             type: Boolean,
             default: true
         },
-        [TableFields.deleted] : {
+        [TableFields.deleted]: {
             type: Boolean,
             default: false,
         },
-        [TableFields.userDeleted] : {
+        [TableFields.userDeleted]: {
             type: Boolean,
             default: false,
         },
@@ -139,8 +139,12 @@ const plantSchema = new mongoose.Schema(
         [TableFields._updatedAt]: {
             type: Date,
         },
-         [TableFields._deletedAt]: {
+        [TableFields._deletedAt]: {
             type: Date,
+        },
+        [TableFields.adminNote]: {
+            type: String,
+            trim: true
         },
     },
     {
@@ -168,7 +172,7 @@ const plantSchema = new mongoose.Schema(
     }
 );
 
-plantSchema.index({[TableFields.plantUniqueId]: 1 }, { unique: true });
+plantSchema.index({ [TableFields.plantUniqueId]: 1 }, { unique: true });
 
 const Plant = mongoose.model(TableNames.Plant, plantSchema);
 module.exports = Plant;

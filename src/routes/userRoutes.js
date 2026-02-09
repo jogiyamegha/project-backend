@@ -4,6 +4,8 @@ const PlantController = require('../controllers/user/PlantController');
 const DefaultController = require("../controllers/admin/DefaultController");
 const AuthController = require('../controllers/user/AuthController');
 const UserController = require('../controllers/user/UserController');
+const WalletController = require('../controllers/user/WalletController');
+const BillController = require('../controllers/user/BillController');
 const ImageHandler = require("../middleware/imageVerifier");
 
 const router = API.configRoute("/user")
@@ -77,6 +79,37 @@ const router = API.configRoute("/user")
 
     .addPath("/payment/confirm-intent")
     .asPOST(UserController.confirmPaymentIntent)
+    .useUserAuth()
+    .build()
+
+    .addPath('/bill/request-cash-payment/:id')
+    .asUPDATE(BillController.payBillCash)
+    .useUserAuth([UserTypes.Consumer])
+    .build()
+
+    .addPath('/my-bills')
+    .asGET(BillController.listMyBills)
+    .useUserAuth([UserTypes.Consumer])
+    .build()
+
+    /**
+     * -------------------------------------
+     * Wallet Routes
+     * -------------------------------------
+     */
+
+    .addPath('/wallet/deposit')
+    .asPOST(WalletController.requestDeposit)
+    .useUserAuth()
+    .build()
+
+    .addPath('/wallet/transactions')
+    .asGET(WalletController.listTransactions)
+    .useUserAuth()
+    .build()
+
+    .addPath('/wallet/balance')
+    .asGET(WalletController.getWalletBalance)
     .useUserAuth()
     .build()
 

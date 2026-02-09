@@ -5,6 +5,7 @@ const PlantController = require('../controllers/admin/PlantController');
 const PpaController = require('../controllers/admin/PpaController');
 const BillController = require("../controllers/admin/BillController");
 const UserController = require("../controllers/admin/UserController");
+const WalletController = require("../controllers/admin/WalletController");
 const ImageHandler = require("../middleware/imageVerifier");
 
 const router = API.configRoute("/admin")
@@ -212,7 +213,23 @@ const router = API.configRoute("/admin")
      */
 
     .addPath(`/update/cash-payment/:${TableFields.ID}`)
-    .asUPDATE(BillController.updateCashPayment)
+    .asUPDATE(BillController.updateCashPayment) // Updated to accept adminNote in body
+    .useAdminAuth()
+    .build()
+
+    /**
+     * -------------------------------------
+     * Wallet Routes
+     * -------------------------------------
+     */
+
+    .addPath('/wallet/transactions')
+    .asGET(WalletController.listTransactions)
+    .useAdminAuth()
+    .build()
+
+    .addPath(`/wallet/approve-deposit/:${TableFields.ID}`)
+    .asUPDATE(WalletController.approveDeposit)
     .useAdminAuth()
     .build()
 

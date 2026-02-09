@@ -11,35 +11,35 @@ exports.generateBill = async (req) => {
     const billingMonth = reqBody[TableFields.billingMonth];
     const billingYear = reqBody[TableFields.billingYear];
 
-    if(!ppaId) {
+    if (!ppaId) {
         throw new ValidationError(ValidationMsgs.PpaIdEmpty)
     }
     const ppa = await PpaService.getUserById(ppaId).withSigned().execute();
-    if(!ppa?.[TableFields.isSigned]) {
+    if (!ppa?.[TableFields.isSigned]) {
         throw new ValidationError(ValidationMsgs.PpaNotSigned)
     }
-    if(!billingMonth) {
+    if (!billingMonth) {
         throw new ValidationError(ValidationMsgs.BillingMonthEmpty)
     }
-    if(!billingYear) {
+    if (!billingYear) {
         throw new ValidationError(ValidationMsgs.BillingYearEmpty)
     }
 
-    const billExists = await BillService.existForMonthPpaId(ppaId, billingMonth, billingYear) 
-    if(billExists) {
+    const billExists = await BillService.existForMonthPpaId(ppaId, billingMonth, billingYear)
+    if (billExists) {
         throw new ValidationError(ValidationMsgs.BillAlreadyGeneratedForMonthPpa)
     }
     let data = await parseAndValidateBill(
         reqBody,
         undefined,
         false,
-        async(updatedField) => {
+        async (updatedField) => {
             return await BillService.insertRecord(updatedField);
         }
     )
     return data;
 }
- 
+
 exports.editBill = async (req) => {
     const reqBody = req.body;
     const billId = req.params[TableFields.ID];
@@ -54,7 +54,7 @@ exports.editBill = async (req) => {
     }
 
     const response = await parseAndValidateBill(
-        reqBody, 
+        reqBody,
         existingBill,
         true,
         async (updatedFields) => {
@@ -79,14 +79,14 @@ exports.billInfo = async (req) => {
 exports.updateCashPayment = async (req) => {
     const billId = req.params[TableFields.ID];
     console.log(billId);
-    if(!billId) {
+    if (!billId) {
         throw new ValidationError('Parameter not getting')
     }
     const billInfo = await BillService.recordExists(billId);
     if (!billInfo) {
         throw new ValidationError(ValidationMsgs.RecordNotExists);
     }
-    return await BillService.updateCashPayment(billId);
+    return await BillService.updateCashPayment(billId, req.body[TableFields.adminNote]);
 }
 
 exports.downloadBillReport = async (req, res) => {
@@ -96,7 +96,7 @@ exports.downloadBillReport = async (req, res) => {
         const allBills = await BillService.listBills(filter)
             .withBasicInfo()
             .execute();
-        
+
         const UserPaymentMethodLabel = (type) => {
             switch (type) {
                 case UserPaymentMethod.Cash:
@@ -137,50 +137,50 @@ exports.downloadBillReport = async (req, res) => {
                     return "-";
             }
         };
-        
+
         const resultData = [];
 
         for (const bill of allBills.records) {
             resultData.push({
-                "PPA's UniqueId" : bill?.[TableFields.ppaDetail]?.[TableFields.ppaUniqueId],
-                "PPA's Name" : bill?.[TableFields.ppaDetail]?.[TableFields.ppaName],
-                "Plant's UniqueId" : bill?.[TableFields.ppaDetail]?.[TableFields.plantUniqueId],
-                "Plant's Name" : bill?.[TableFields.ppaDetail]?.[TableFields.plantUniqueName],
-                "Tarrif" : bill?.[TableFields.ppaDetail]?.[TableFields.tarrif],
-                "Plant's Capacity" : bill?.[TableFields.ppaDetail]?.[TableFields.plantCapacity],
-                "Billing Month" : BillingMonthLabel(bill?.[TableFields.billingMonth]),
-                "Billing Year" : bill?.[TableFields.billingYear],
-                "Generated Units" : bill?.[TableFields.generatedUnits],
-                "Consumed Units" : bill?.[TableFields.consumedUnits],
-                "Exported Units" : bill?.[TableFields.exportedUnits],
-                "Total Amount" : bill?.[TableFields.totalAmount],
-                "Is Paid?" : bill?.[TableFields.isPaid],
-                "User Payment Method" : UserPaymentMethodLabel(bill?.[TableFields.userPaymentMethod] || 'payment not done yet'),
-                "Payment Date" : bill?.[TableFields.isPaid] === true ? Util.formatToDdMmYyyyWithTime(bill?.[TableFields.paymentDate]) : 'payment not done yet',
+                "PPA's UniqueId": bill?.[TableFields.ppaDetail]?.[TableFields.ppaUniqueId],
+                "PPA's Name": bill?.[TableFields.ppaDetail]?.[TableFields.ppaName],
+                "Plant's UniqueId": bill?.[TableFields.ppaDetail]?.[TableFields.plantUniqueId],
+                "Plant's Name": bill?.[TableFields.ppaDetail]?.[TableFields.plantUniqueName],
+                "Tarrif": bill?.[TableFields.ppaDetail]?.[TableFields.tarrif],
+                "Plant's Capacity": bill?.[TableFields.ppaDetail]?.[TableFields.plantCapacity],
+                "Billing Month": BillingMonthLabel(bill?.[TableFields.billingMonth]),
+                "Billing Year": bill?.[TableFields.billingYear],
+                "Generated Units": bill?.[TableFields.generatedUnits],
+                "Consumed Units": bill?.[TableFields.consumedUnits],
+                "Exported Units": bill?.[TableFields.exportedUnits],
+                "Total Amount": bill?.[TableFields.totalAmount],
+                "Is Paid?": bill?.[TableFields.isPaid],
+                "User Payment Method": UserPaymentMethodLabel(bill?.[TableFields.userPaymentMethod] || 'payment not done yet'),
+                "Payment Date": bill?.[TableFields.isPaid] === true ? Util.formatToDdMmYyyyWithTime(bill?.[TableFields.paymentDate]) : 'payment not done yet',
             })
         }
         const columns = [
-            { width: 20 }, 
-            { width: 10 }, 
-            { width: 10 }, 
-            { width: 20 }, 
-            { width: 15 }, 
-            { width: 30 }, 
-            { width: 10 }, 
-            { width: 15 }, 
-            { width: 15 }, 
-            { width: 15 }, 
-            { width: 15 }, 
-            { width: 15 }, 
-            { width: 10 }, 
-            { width: 25 }, 
-            { width: 35 }, 
+            { width: 20 },
+            { width: 10 },
+            { width: 10 },
+            { width: 20 },
+            { width: 15 },
+            { width: 30 },
+            { width: 10 },
+            { width: 15 },
+            { width: 15 },
+            { width: 15 },
+            { width: 15 },
+            { width: 15 },
+            { width: 10 },
+            { width: 25 },
+            { width: 35 },
         ];
 
         const sheetName = "Bill Report";
         const fileName = `bill_report_${new Date()
-        .toISOString()
-        .split("T")[0]}.xlsx`;
+            .toISOString()
+            .split("T")[0]}.xlsx`;
 
         Util.exportToExcel(res, resultData, columns, sheetName, fileName);
         return;
@@ -203,7 +203,7 @@ async function parseAndValidateBill(
     reqBody,
     existingBill = {},
     update = false,
-    onValidationCompleted = async (updatedUserFields) => {}
+    onValidationCompleted = async (updatedUserFields) => { }
 ) {
 
     const ppaId = reqBody[TableFields.ppaId];
@@ -222,7 +222,7 @@ async function parseAndValidateBill(
     }
     if (isFieldEmpty(reqBody[TableFields.consumedUnits], existingBill[TableFields.consumedUnits])) {
         throw new ValidationError(ValidationMsgs.ConsumedUnitsEmpty);
-    } 
+    }
     if (isFieldEmpty(reqBody[TableFields.exportedUnits], existingBill[TableFields.exportedUnits])) {
         throw new ValidationError(ValidationMsgs.ExportedUnitsEmpty);
     }
@@ -233,15 +233,15 @@ async function parseAndValidateBill(
     try {
         if (update === true) {
             let updatedFields = {
-                [TableFields.generatedUnits] : reqBody[TableFields.generatedUnits] ?? existingBill[TableFields.generatedUnits],
-                [TableFields.consumedUnits] : reqBody[TableFields.consumedUnits] ?? existingBill[TableFields.consumedUnits],
-                [TableFields.exportedUnits] : reqBody[TableFields.exportedUnits] ?? existingBill[TableFields.exportedUnits],
+                [TableFields.generatedUnits]: reqBody[TableFields.generatedUnits] ?? existingBill[TableFields.generatedUnits],
+                [TableFields.consumedUnits]: reqBody[TableFields.consumedUnits] ?? existingBill[TableFields.consumedUnits],
+                [TableFields.exportedUnits]: reqBody[TableFields.exportedUnits] ?? existingBill[TableFields.exportedUnits],
             }
             return await onValidationCompleted(updatedFields);
         } else {
             let response = await onValidationCompleted({
-                [TableFields.ppaDetail] : {
-                    [TableFields.ppaId] : ppaId,
+                [TableFields.ppaDetail]: {
+                    [TableFields.ppaId]: ppaId,
                     [TableFields.plantId]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.plantId],
                     [TableFields.userId]: ppaInfo?.[TableFields.plantDetail]?.[TableFields.userId],
                     [TableFields.ppaUniqueId]: ppaInfo?.[TableFields.ppaUniqueId],
@@ -251,12 +251,12 @@ async function parseAndValidateBill(
                     [TableFields.tarrif]: ppaInfo?.[TableFields.tarrif],
                     [TableFields.plantCapacity]: ppaInfo?.[TableFields.plantCapacity],
                 },
-                [TableFields.billingMonth] : reqBody[TableFields.billingMonth],
-                [TableFields.billingYear] : reqBody[TableFields.billingYear],
-                [TableFields.generatedUnits] : reqBody[TableFields.generatedUnits],
-                [TableFields.consumedUnits] : reqBody[TableFields.consumedUnits],
-                [TableFields.exportedUnits] : reqBody[TableFields.exportedUnits],
-                [TableFields.totalAmount] : totalAmount || 0,
+                [TableFields.billingMonth]: reqBody[TableFields.billingMonth],
+                [TableFields.billingYear]: reqBody[TableFields.billingYear],
+                [TableFields.generatedUnits]: reqBody[TableFields.generatedUnits],
+                [TableFields.consumedUnits]: reqBody[TableFields.consumedUnits],
+                [TableFields.exportedUnits]: reqBody[TableFields.exportedUnits],
+                [TableFields.totalAmount]: totalAmount || 0,
             })
             return response;
         }
