@@ -4,9 +4,14 @@ const {ValidationMsgs, TableNames, TableFields, UserTypes} = require("../../util
 const ValidationError = require("../../utils/ValidationError");
 const bcrypt = require("bcryptjs"); // To compare value with it's Hash
 const jwt = require("jsonwebtoken"); // To generate Hash
+const { getUrl, Folders } = require("../../utils/storage");
 
 const userSchema = new mongoose.Schema(
     {
+        [TableFields.profilePicture] : {
+            type: String,
+            default: null,
+        },
         [TableFields.name_]: {
             type: String,
             trim: true,
@@ -97,6 +102,10 @@ const userSchema = new mongoose.Schema(
                 delete ret.createdAt;
                 delete ret.updatedAt;
                 delete ret.__v;
+
+                if (ret[TableFields.profilePicture]) {
+                    ret[TableFields.profilePicture] = getUrl(Folders.ProfilePicture, ret[TableFields.profilePicture]);
+                }
             },
         },
     }

@@ -26,7 +26,10 @@ class UserService {
 
     static getUserById = (userId) => {
         return new ProjectionBuilder(async function () {
-            return await User.findOne({ [TableFields.ID]: userId }, this);
+            return await User.findOne({ 
+                [TableFields.ID]: userId,
+                [TableFields.deleted] : false
+            }, this);
         });
     };
 
@@ -37,6 +40,18 @@ class UserService {
                 ? {
                     [TableFields.ID]: { $ne: exceptionId },
                 }
+                : {}),
+        });
+    };
+
+    static existsWithPhone = async (phone, phoneCountry, exceptionId) => {
+        return await User.exists({
+            [TableFields.phone]: phone,
+            [TableFields.phoneCountry]: phoneCountry,
+            ...(exceptionId
+                ? {
+                      [TableFields.ID]: {$ne: exceptionId},
+                  }
                 : {}),
         });
     };
@@ -56,6 +71,10 @@ class UserService {
         // Set userType from reqBody if present, otherwise default to Investor
         if (!reqBody[TableFields.userType]) {
             user[TableFields.userType] = UserTypes.Investor;
+        }
+
+        if (reqBody[TableFields.profilePicture]) {
+            user[TableFields.profilePicture] = reqBody[TableFields.profilePicture] 
         }
 
         if (!user.isValidPassword(password)) {
@@ -155,6 +174,7 @@ class UserService {
     };
 
     static updateRecord = async (recordId, updatedUserFields = {}) => {
+        console.log("updatedUserFields",updatedUserFields);
         const record = await User.findByIdAndUpdate(
             recordId,
             {
@@ -172,6 +192,34 @@ class UserService {
         if (!record) {
             throw new ValidationError(ValidationMsgs.RecordNotFound);
         }
+    };
+
+    static updateUserRecord = async (recordId, updatedUserFields = {}) => {
+        let phone = updatedUserFields[TableFields.phone];
+        let phoneCountry = updatedUserFields[TableFields.phoneCountry];
+
+        if (phone && (await UserService.existsWithPhone(phone, phoneCountry, recordId))) {
+            throw new ValidationError(ValidationMsgs.DuplicatePhone);
+        }
+        let record = await User.updateOne(
+            {
+
+                [TableFields.ID] : MongoUtil.toObjectId(recordId),
+            },
+            {
+                ...updatedUserFields,
+                [TableFields._updatedAt]: Date.now(),
+            },
+            {
+                new: false,
+                projection: {[TableFields.ID]: 1},
+            }
+        );
+        console.log("record",record);
+        if (!record) {
+            throw new ValidationError(ValidationMsgs.RecordNotFound);
+        }
+        return record;
     };
 
     static getResetPasswordToken = async (email) => {
@@ -284,6 +332,7 @@ const ProjectionBuilder = class {
         const projection = {};
         this.withBasicInfo = () => {
             projection[TableFields.ID] = 1;
+            projection[TableFields.profilePicture] = 1;
             projection[TableFields.name_] = 1;
             projection[TableFields.email] = 1;
             projection[TableFields.userType] = 1;

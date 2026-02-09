@@ -41,6 +41,7 @@ const router = API.configRoute("/user")
 
     .addPath("/profile/update")
     .asUPDATE(UserController.updateProfile)
+    .userMiddlewares(ImageHandler.single([TableFields.profilePicture]))
     .useUserAuth([UserTypes.Consumer, UserTypes.Investor])
     .build()
 

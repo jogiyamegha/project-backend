@@ -89,7 +89,7 @@ const router = API.configRoute("/admin")
 
     .addPath(`/user/edit/:${TableFields.ID}`)
     .asUPDATE(UserController.editUser)
-    .userMiddlewares(ImageHandler.single([TableFields.profilePicture]))
+    // .userMiddlewares(ImageHandler.single([TableFields.profilePicture]))
     .useAdminAuth()
     .build()
 

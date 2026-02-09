@@ -1,4 +1,5 @@
 const Folders = {
+    ProfilePicture: "uploads/profilePicture",
     BillImage: "uploads/billImage",
     PpaDocs: "uploads/ppaDocuments",
     LeaseDocs: "uploads/leaseDocuments",

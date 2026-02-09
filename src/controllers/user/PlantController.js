@@ -41,7 +41,8 @@ exports.addPlant = async (req, res) => {
     const emailData = {
         reqUserName : reqUser[TableFields.name_],
     }
-    Email.sentPlantForm(adminEmail, emailData, file)
+    // Email.sentPlantForm(adminEmail, emailData, file)
+    
     // res.setHeader('Content-Type', 'application/pdf');
     // res.setHeader(
     //     'Content-Disposition',
