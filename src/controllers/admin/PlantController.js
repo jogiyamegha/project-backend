@@ -288,20 +288,25 @@ async function parseAndValidatePlant(
         } else {
             let response = await onValidationCompleted({
                 [TableFields.plantUniqueId]: plantUniqueId,
-                [`${TableFields.userDetails}.${TableFields.userId}`]: userInfo[TableFields.ID],
-                [`${TableFields.userDetails}.${TableFields.userType}`]: userInfo[TableFields.userType],
-                [`${TableFields.userDetails}.${TableFields.name_}`]: userInfo[TableFields.name_],
-                [`${TableFields.userDetails}.${TableFields.deleted}`]: userInfo[TableFields.deleted],
-                [`${TableFields.propertyAddress}.${TableFields.propertyName}`]: reqBody[TableFields.propertyName] || null,
-                [`${TableFields.propertyAddress}.${TableFields.propertyType}`]: reqBody[TableFields.propertyType],
-                [`${TableFields.propertyAddress}.${TableFields.address}`]: reqBody[TableFields.address],
-                [`${TableFields.propertyAddress}.${TableFields.city}`]: reqBody[TableFields.city],
-                [`${TableFields.propertyAddress}.${TableFields.state}`]: reqBody[TableFields.state],
-                [`${TableFields.propertyAddress}.${TableFields.pincode}`]: reqBody[TableFields.pincode],
-                [`${TableFields.propertyAddress}.${TableFields.roofArea}`]: reqBody[TableFields.roofArea],
-                [`${TableFields.propertyAddress}.${TableFields.billAmount}`]: reqBody[TableFields.billAmount],
-                [`${TableFields.propertyAddress}.${TableFields.billImage}`]: persistedImageKey,
-                [`${TableFields.propertyAddress}.${TableFields.electricityRate}`]: reqBody[TableFields.electricityRate] || 0,
+                [TableFields.userDetails]: {
+                    [TableFields.userId]: userInfo[TableFields.ID],
+                    [TableFields.userType]: userInfo[TableFields.userType],
+                    [TableFields.name_]: userInfo[TableFields.name_],
+                    [TableFields.deleted]: userInfo[TableFields.deleted],
+                },
+                [TableFields.propertyAddress]: {
+                    [TableFields.propertyName]: reqBody[TableFields.propertyName] || null,
+                    [TableFields.propertyType]: reqBody[TableFields.propertyType],
+                    [TableFields.address]: reqBody[TableFields.address],
+                    [TableFields.city]: reqBody[TableFields.city],
+                    [TableFields.state]: reqBody[TableFields.state],
+                    [TableFields.pincode]: reqBody[TableFields.pincode],
+                    [TableFields.roofArea]: reqBody[TableFields.roofArea],
+                    [TableFields.billAmount]: reqBody[TableFields.billAmount],
+                    [TableFields.billImage]: persistedImageKey,
+                    [TableFields.electricityRate]: reqBody[TableFields.electricityRate] || 0,
+                },
+                [TableFields.plantStatus]: PlantStatus.Submitted
             });
 
             return response;

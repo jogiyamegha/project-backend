@@ -88,7 +88,7 @@ const walletTransactionSchema = new mongoose.Schema(
         },
         [TableFields._createdAt]: {
             type: Date,
-            default: Date.now()
+            default: Date.now
         },
         [TableFields._updatedAt]: {
             type: Date,

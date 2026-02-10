@@ -9,10 +9,11 @@ const {
     TableNames,
     InterfaceTypes,
     CounterSchemaType,
+    PlantStatus,
 } = require("../../utils/constants");
 const ValidationError = require("../../utils/ValidationError");
-const {Folders} = require("../../utils/metadata");
-const {addFile, createThumbnailSingle, removeFileById} = require("../../utils/storage");
+const { Folders } = require("../../utils/metadata");
+const { addFile, createThumbnailSingle, removeFileById } = require("../../utils/storage");
 const Email = require("../../emails/email");
 const CounterService = require("../../db/services/CounterService");
 
@@ -22,9 +23,9 @@ exports.addPlant = async (req, res) => {
     let reqUser = req.user;
     const data = await parseAndValidatePlant(
         reqUser,
-        reqBody, 
-        undefined, 
-        providedFiles, 
+        reqBody,
+        undefined,
+        providedFiles,
         async (updatedUserFields) => {
             return await PlantService.insertRecord(updatedUserFields);
         }
@@ -34,31 +35,24 @@ exports.addPlant = async (req, res) => {
         throw new ValidationError(ValidationMsgs.RecordNotFound);
     }
 
-    const adminEmail = 'parthvekariya124@gmail.com';
-
-    const file = await PlantService.generatePlantPdf(data);
-    console.log(file);
-    const emailData = {
-        reqUserName : reqUser[TableFields.name_],
-    }
-    // Email.sentPlantForm(adminEmail, emailData, file)
-    
-    // res.setHeader('Content-Type', 'application/pdf');
-    // res.setHeader(
-    //     'Content-Disposition',
-    //     'inline; filename="plant-details.pdf"'
-    // );
-
-    // return res.status(200).send(file);
+    return {
+        success: true,
+        data: data
+    };
 };
 
 exports.listMyPlants = async (req) => {
     let reqUser = req.user;
-    return await PlantService.listPlants(
+    const result = await PlantService.listPlants(
         {
-            [TableFields.userId] : reqUser[TableFields.ID]
+            [TableFields.userId]: reqUser[TableFields.ID]
         }
-    ).withBasicInfo().execute()
+    ).withBasicInfo().withTimeStamps().execute();
+
+    return {
+        result: result.records,
+        total: result.total
+    };
 }
 
 
@@ -67,11 +61,11 @@ async function parseAndValidatePlant(
     reqBody,
     existingPlant = {},
     providedFile,
-    onValidationCompleted = async () => {}
+    onValidationCompleted = async () => { }
 ) {
     const plantUniqueId = await CounterService.consumeSingleKey(CounterSchemaType.Plant);
 
-    if (isFieldEmpty(reqBody[TableFields.propertyType], existingPlant[`${TableFields.propertyAddress}.${TableFields.propertyType}`])){
+    if (isFieldEmpty(reqBody[TableFields.propertyType], existingPlant[`${TableFields.propertyAddress}.${TableFields.propertyType}`])) {
         throw new ValidationError(ValidationMsgs.PropertyTypeEmpty);
     }
     if (isFieldEmpty(reqBody[TableFields.address], existingPlant[`${TableFields.propertyAddress}.${TableFields.address}`])) {
@@ -108,21 +102,26 @@ async function parseAndValidatePlant(
         }
 
         let response = await onValidationCompleted({
-            [TableFields.plantUniqueId] : plantUniqueId,
-            [`${TableFields.userDetails}.${TableFields.userId}`]: userInfo[TableFields.ID],
-            [`${TableFields.userDetails}.${TableFields.userType}`]: userInfo[TableFields.userType],
-            [`${TableFields.userDetails}.${TableFields.name_}`]: userInfo[TableFields.name_],
-            [`${TableFields.userDetails}.${TableFields.deleted}`]: userInfo[TableFields.deleted],
-            [`${TableFields.propertyAddress}.${TableFields.propertyName}`]: reqBody[TableFields.propertyName] || null,
-            [`${TableFields.propertyAddress}.${TableFields.propertyType}`]: reqBody[TableFields.propertyType],
-            [`${TableFields.propertyAddress}.${TableFields.address}`]: reqBody[TableFields.address],
-            [`${TableFields.propertyAddress}.${TableFields.city}`]: reqBody[TableFields.city],
-            [`${TableFields.propertyAddress}.${TableFields.state}`]: reqBody[TableFields.state],
-            [`${TableFields.propertyAddress}.${TableFields.pincode}`]: reqBody[TableFields.pincode],
-            [`${TableFields.propertyAddress}.${TableFields.roofArea}`]: reqBody[TableFields.roofArea],
-            [`${TableFields.propertyAddress}.${TableFields.billAmount}`]: reqBody[TableFields.billAmount],
-            [`${TableFields.propertyAddress}.${TableFields.billImage}`]: persistedImageKey,
-            [`${TableFields.propertyAddress}.${TableFields.electricityRate}`]: reqBody[TableFields.electricityRate] || 0,
+            [TableFields.plantUniqueId]: plantUniqueId,
+            [TableFields.userDetails]: {
+                [TableFields.userId]: userInfo[TableFields.ID],
+                [TableFields.userType]: userInfo[TableFields.userType],
+                [TableFields.name_]: userInfo[TableFields.name_],
+                [TableFields.deleted]: userInfo[TableFields.deleted],
+            },
+            [TableFields.propertyAddress]: {
+                [TableFields.propertyName]: reqBody[TableFields.propertyName] || null,
+                [TableFields.propertyType]: reqBody[TableFields.propertyType],
+                [TableFields.address]: reqBody[TableFields.address],
+                [TableFields.city]: reqBody[TableFields.city],
+                [TableFields.state]: reqBody[TableFields.state],
+                [TableFields.pincode]: reqBody[TableFields.pincode],
+                [TableFields.roofArea]: reqBody[TableFields.roofArea],
+                [TableFields.billAmount]: reqBody[TableFields.billAmount],
+                [TableFields.billImage]: persistedImageKey,
+                [TableFields.electricityRate]: reqBody[TableFields.electricityRate] || 0,
+            },
+            [TableFields.plantStatus]: PlantStatus.Submitted
         });
 
         return response;

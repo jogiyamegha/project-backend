@@ -31,14 +31,16 @@ exports.requestDeposit = async (req) => {
     const transaction = await WalletTransactionService.insertRecord({
         [TableFields.fromUserDetail]: {
             [TableFields.walletId]: wallet[TableFields.ID],
-            [TableFields.userId]: userId,
-            [TableFields.userType]: user[TableFields.userType],
-            [TableFields.name_]: user[TableFields.name_]
+            [TableFields.userDetails]: {
+                [TableFields.userId]: userId,
+                [TableFields.userType]: user[TableFields.userType],
+                [TableFields.name_]: user[TableFields.name_]
+            }
         },
-        [TableFields.transactionType]: TransactionType.BillPayment, // Or a dedicated Deposit type if available, reusing BillPayment as 'Payment' context or add Deposit to constants
+        [TableFields.transactionType]: TransactionType.WalletDeposit,
         [TableFields.transactionAmount]: amount,
         [TableFields.transactionStatus]: TransactionStatus.Pending,
-        [TableFields.description]: "Wallet Deposit Request (Cash/Bank)",
+        [TableFields.description]: reqBody[TableFields.description] || "Wallet Deposit Request",
         [TableFields.bankReferenceId]: reqBody[TableFields.bankReferenceId], // Optional
         [TableFields.transactionId]: `TXN-${Date.now()}`
     });

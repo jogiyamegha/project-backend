@@ -18,7 +18,7 @@ exports.approveDeposit = async (req) => {
     }
 
     // Update Transaction Status
-    await WalletTransactionService.updateStatus(transactionId, TransactionStatus.Succssful, admin[TableFields.ID], adminNote);
+    await WalletTransactionService.updateStatus(transactionId, TransactionStatus.Successful, admin[TableFields.ID], adminNote);
 
     // Update Wallet Balance
     const userId = transaction[TableFields.fromUserDetail][TableFields.userId];

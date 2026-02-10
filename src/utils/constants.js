@@ -27,6 +27,7 @@ const TransactionType = (function () {
     TransactionType.BillPayment = 1;
     TransactionType.Return = 2;
     TransactionType.InvestoerReturn = 3;
+    TransactionType.WalletDeposit = 4;
 
     return TransactionType;
 })();
@@ -62,7 +63,7 @@ const PaymentStatusTypes = (function () {
 const TransactionStatus = (function () {
     function TransactionStatus() { };
     TransactionStatus.Pending = 1;
-    TransactionStatus.Succssful = 2;
+    TransactionStatus.Successful = 2;
     TransactionStatus.Failed = 3;
     TransactionStatus.InProgress = 4;
 
