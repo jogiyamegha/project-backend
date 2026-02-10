@@ -103,6 +103,7 @@ async function parseAndValidateUser(
             let updatedFields = {};
             updatedFields = {
                 [TableFields.profilePicture]: persistedImageKey ?? existingUser?.[TableFields.profilePicture],
+                [TableFields.userType] : reqBody[TableFields.userType] ?? existingUser[TableFields.userType],
                 [TableFields.name_]: reqBody[TableFields.name_] ?? existingUser[TableFields.name_],
                 [TableFields.phoneCountry]: reqBody[TableFields.phoneCountry] ?? existingUser[TableFields.phoneCountry],
                 [TableFields.phone]: reqBody[TableFields.phone] ?? existingUser[TableFields.phone],
@@ -113,7 +114,23 @@ async function parseAndValidateUser(
                 },
             }; 
             return await onValidationCompleted(updatedFields);
-        } 
+        } else {
+
+            return await onValidationCompleted({
+                [TableFields.profilePicture]: persistedImageKey ?? existingUser?.[TableFields.profilePicture],
+                [TableFields.userType] : reqBody[TableFields.userType] ?? existingUser[TableFields.userType],
+                [TableFields.name_]: reqBody[TableFields.name_] ?? existingUser[TableFields.name_],
+                [TableFields.email]: reqBody[TableFields.email] ?? existingUser[TableFields.email],
+                [TableFields.password] : "Samran@123",
+                [TableFields.phoneCountry]: reqBody[TableFields.phoneCountry] ?? existingUser[TableFields.phoneCountry],
+                [TableFields.phone]: reqBody[TableFields.phone] ?? existingUser[TableFields.phone],
+                [TableFields.addressDetail]: {    
+                    [TableFields.address]: reqBody[TableFields.address] ?? existingUser[TableFields.addressDetail]?.[TableFields.address],
+                    [TableFields.pincode]: reqBody[TableFields.pincode] ?? existingUser[TableFields.addressDetail]?.[TableFields.pincode],
+                    [TableFields.city]: reqBody[TableFields.city] ?? existingUser[TableFields.addressDetail]?.[TableFields.city],
+                },
+            });
+        }
     } catch (error) {
         throw error;
     }
