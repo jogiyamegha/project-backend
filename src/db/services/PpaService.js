@@ -50,7 +50,9 @@ class PpaService {
             let sortKey = filter.sortKey || TableFields._createdAt;
             let sortOrder = filter.sortOrder || 1;
             let needCount = Util.parseBoolean(filter.needCount);
-            let searchQuery = {};
+            let searchQuery = {
+                [TableFields.deleted] : false
+            };
 
             let searchTerm = filter.searchTerm;
             // if (searchTerm) {
